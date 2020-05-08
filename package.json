@@ -1,0 +1,38 @@
+{
+  "name": "@etvas/etvas-sdk",
+  "version": "0.0.2",
+  "description": "This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/etvascom/etvas-sdk.git"
+  },
+  "keywords": [
+    "etvas",
+    "sdk"
+  ],
+  "author": "Alex Sofronie <alex.sofronie@etvas.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/etvascom/etvas-sdk/issues"
+  },
+  "homepage": "https://github.com/etvascom/etvas-sdk#readme",
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1"
+  },
+  "dependencies": {
+    "axios": "^0.19.2",
+    "jsonwebtoken": "^8.5.1"
+  }
+}
