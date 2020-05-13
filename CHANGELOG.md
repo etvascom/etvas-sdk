@@ -3,3 +3,8 @@
 - `v0.1.0` - initial release
   - Client with `validateToken`, `getCustomerProfile`
   - Event with `onPurchase`
+- `v0.1.1`
+  - refactor API - **Breaking change**
+  - added unit tests
+- `v0.1.2`
+  - added continuous integration

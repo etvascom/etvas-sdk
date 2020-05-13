@@ -181,6 +181,17 @@ router.post(path, (req, res, next) => {
 })
 ```
 
+## Running tests
+
+We are using [mocha](https://mochajs.org) and standard NodeJS `assert` library.
+To run all tests, execute:
+
+```
+git clone https://github.com/etvascom/etvas-sdk.git
+cd etvas-sdk
+npm ci && npm run test
+```
+
 ## Semver
 
 Until `@etvas/etvas-sdk` reaches a `1.0` release, breaking changes
