@@ -8,3 +8,8 @@
   - added unit tests
 - `v0.1.2`
   - added continuous integration
+- `v0.1.3`
+  - bug fixes
+  - propagate `contextId` in customer profile
+  - expose a config get all
+  - etvas version property

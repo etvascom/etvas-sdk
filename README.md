@@ -21,13 +21,20 @@ as early as possible in your application, so you don't get a nasty
 error when trying to call other Etvas functions.
 
 ```
-const etvas = require('@etvas/etvs-sdk')
+const etvas = require('@etvas/etvas-sdk')
 
 const config = {
   apiURL: 'https://api.etvas.com',
   apiKey: '1234-1234-1234-1234'
 }
 etvas.init(config)
+```
+
+See what version you are currently using with:
+
+```
+const etvas = require('@etvas/etvas-sdk')
+console.log('I am using the awesome @etvas/etvas-sdk version', etvas.version)
 ```
 
 ### Using the client
