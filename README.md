@@ -1,6 +1,6 @@
 # etvas-sdk
 
-![Unit Testing](https://github.com/etvascom/etvas-sdk/workflows/Unit%20Testing/badge.svg)
+![Unit Testing](https://github.com/etvascom/etvas-sdk/workflows/unit-testing/badge.svg)
 
 This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers.
 
