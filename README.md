@@ -1,6 +1,6 @@
 # etvas-sdk
 
-![Node.js CI](https://github.com/etvascom/etvas-sdk/workflows/Node.js%20CI/badge.svg)
+![Unit Testing](https://github.com/etvascom/etvas-sdk/workflows/Unit%20Testing/badge.svg)
 
 This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers.
 
