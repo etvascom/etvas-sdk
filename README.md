@@ -188,7 +188,7 @@ router.post(path, (req, res, next) => {
 })
 ```
 
-## Running tests
+## Running tests and coverage
 
 We are using [mocha](https://mochajs.org) and standard NodeJS `assert` library.
 To run all tests, execute:
@@ -197,6 +197,13 @@ To run all tests, execute:
 git clone https://github.com/etvascom/etvas-sdk.git
 cd etvas-sdk
 npm ci && npm run test
+```
+
+For code coverage, we use [istanbul](https://istanbul.js.org/). For
+a code coverage report, run:
+
+```
+npm run cov
 ```
 
 ## Semver
