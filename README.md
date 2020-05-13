@@ -125,6 +125,8 @@ await etvas.client.write('my-key', null)
 
 ## Events
 
+> Note: Work in progress
+
 You will receive some events and you need to process some of them.
 When the event is required to be processed, it means you need to
 return a `HTTP/1.1 200 OK` response when Etvas calls you.
@@ -159,12 +161,15 @@ You need to have a slightly different approach. The example below
 is still for `express` but yoy can adapt it for anything out there:
 
 ```
-const { path, method } = etvas.events.handlers.purchase
-// the method is one of get, post, put, patch or delete
-router[method](path, (req, res, next) => {
-  const { data } = req.body
-  // manage data
-  //...
+const path = etvas.events.path
+router.post(path, (req, res, next) => {
+  const { event } = req.body
+  switch (event.type) {
+    case etvas.events.purchase:
+      // manage purchase data
+      //...
+      break
+  }
 
   // return a 200 OK status
   res.status(200).send({ success: true })
