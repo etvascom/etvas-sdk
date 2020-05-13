@@ -7,7 +7,8 @@
     "lib": "lib"
   },
   "scripts": {
-    "test": "mocha --check-leaks --bail --recursive"
+    "test": "mocha --check-leaks --recursive --bail",
+    "cov": "nyc mocha --recursive --exit"
   },
   "repository": {
     "type": "git",
@@ -31,7 +32,8 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "mocha": "^7.1.2",
-    "moxios": "^0.4.0"
+    "moxios": "^0.4.0",
+    "nyc": "^15.0.1"
   },
   "dependencies": {
     "axios": "^0.19.2"
