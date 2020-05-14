@@ -1,6 +1,7 @@
 # etvas-sdk
 
 ![Unit Testing](https://github.com/etvascom/etvas-sdk/workflows/unit-testing/badge.svg)
+![Code coverage 85%](https://github.com/etvascom/etvas-sdk/workflows/Code%20coverage%2085%25/badge.svg)
 
 This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers.
 
