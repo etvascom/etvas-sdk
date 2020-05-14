@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "mocha --check-leaks --recursive --bail",
-    "cov": "nyc mocha --recursive --exit"
+    "cov": "nyc mocha --recursive --exit",
+    "cov:85": "nyc --check-coverage --silent --statements 85 --lines 85 --per-file mocha --recursive --exit"
   },
   "repository": {
     "type": "git",
