@@ -13,3 +13,5 @@
   - propagate `contextId` in customer profile
   - expose a config get all
   - etvas version property
+- `v0.1.4`
+  - bug fixes regarding read and write data
