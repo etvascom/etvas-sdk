@@ -78,4 +78,31 @@ describe('Client.readData', () => {
       assert.equal(err instanceof Error, true)
     }
   })
+  it('should return string if string is stored', async () => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      assert.equal(request.config.method, 'get')
+      assert.equal(request.config.url, '/external-data/a-key')
+      request.respondWith({
+        status: 200,
+        response: { data: 'a non-json string' }
+      })
+    })
+    const response = await readData(xhr, 'a-key')
+    assert.equal(response, 'a non-json string')
+  })
+
+  it('should return object if JSON is stored', async () => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      assert.equal(request.config.method, 'get')
+      assert.equal(request.config.url, '/external-data/a-key')
+      request.respondWith({
+        status: 200,
+        response: { data: JSON.stringify({ foo: 'bar' }) }
+      })
+    })
+    const response = await readData(xhr, 'a-key')
+    assert.deepEqual(response, { foo: 'bar' })
+  })
 })

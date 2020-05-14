@@ -225,4 +225,114 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('notifyLocale - used in user notifications', () => {
+    it('should fail with undefined', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: undefined }, 'TEST')
+      })
+    })
+    it('should fail with empty', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: '' }, 'TEST')
+      })
+    })
+    it('should fail with object', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: { foo: 'bar' } }, 'TEST')
+      })
+    })
+    it('should fail function', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: () => true }, 'TEST')
+      })
+    })
+    it('should fail boolean true', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: true }, 'TEST')
+      })
+    })
+    it('should fail with one char string', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: 'a' }, 'TEST')
+      })
+    })
+    it('should fail with three char string', () => {
+      assert.throws(() => {
+        validate({ notifyLocale: 'abc' }, 'TEST')
+      })
+    })
+    it('should pass with 2 char string', () => {
+      assert.doesNotThrow(() => {
+        validate({ notifyLocale: 'en' }, 'TEST')
+        validate({ notifyLocale: 'de' }, 'TEST')
+        validate({ notifyLocale: 'fr' }, 'TEST')
+        validate({ notifyLocale: 'cz' }, 'TEST')
+        validate({ notifyLocale: 'ro' }, 'TEST')
+      })
+    })
+  })
+  describe('notifySubject - used in user notifications', () => {
+    it('should fail with undefined', () => {
+      assert.throws(() => {
+        validate({ notifySubject: undefined }, 'TEST')
+      })
+    })
+    it('should fail with empty', () => {
+      assert.throws(() => {
+        validate({ notifySubject: '' }, 'TEST')
+      })
+    })
+    it('should fail with object', () => {
+      assert.throws(() => {
+        validate({ notifySubject: { foo: 'bar' } }, 'TEST')
+      })
+    })
+    it('should fail function', () => {
+      assert.throws(() => {
+        validate({ notifySubject: () => true }, 'TEST')
+      })
+    })
+    it('should fail boolean true', () => {
+      assert.throws(() => {
+        validate({ notifySubject: true }, 'TEST')
+      })
+    })
+    it('should pass with string', () => {
+      assert.doesNotThrow(() => {
+        validate({ notifySubject: 'subject' }, 'TEST')
+      })
+    })
+  })
+  describe('notifyMessage - used in user notifications', () => {
+    it('should fail with undefined', () => {
+      assert.throws(() => {
+        validate({ notifyMessage: undefined }, 'TEST')
+      })
+    })
+    it('should fail with empty', () => {
+      assert.throws(() => {
+        validate({ notifyMessage: '' }, 'TEST')
+      })
+    })
+    it('should fail with object', () => {
+      assert.throws(() => {
+        validate({ notifyMessage: { foo: 'bar' } }, 'TEST')
+      })
+    })
+    it('should fail function', () => {
+      assert.throws(() => {
+        validate({ notifyMessage: () => true }, 'TEST')
+      })
+    })
+    it('should fail boolean true', () => {
+      assert.throws(() => {
+        validate({ notifyMessage: true }, 'TEST')
+      })
+    })
+    it('should pass with string', () => {
+      assert.doesNotThrow(() => {
+        validate({ notifyMessage: 'message' }, 'TEST')
+      })
+    })
+  })
 })

@@ -160,8 +160,18 @@ describe('Etvas SDK', () => {
             response: { contextId: 'context-id-1234' }
           })
         })
-
         await etvas.client('token').read('a-key')
+      })
+      it('read should fail if no context', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { noContext: true }
+        })
+        try {
+          await etvas.client('token').read('two-key')
+        } catch (err) {
+          assert.equal(err instanceof Error, true)
+        }
       })
       it('write should call verify token first', async () => {
         moxios.stubRequest(`${REQUEST_URL}/context-id-12345`, {
@@ -181,8 +191,46 @@ describe('Etvas SDK', () => {
             response: { contextId: 'context-id-12345' }
           })
         })
-
         await etvas.client('token').write('a-write-key', 'a-value')
+      })
+      it('write should fail if no context', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { noContext: true }
+        })
+        try {
+          await etvas.client('token').write('key-id', 'value')
+        } catch (err) {
+          assert.equal(err instanceof Error, true)
+        }
+      })
+      it('customerProfile should fail if no context', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { noContext: true }
+        })
+        try {
+          await etvas.client('token').getCustomerProfile()
+        } catch (err) {
+          assert.equal(err instanceof Error, true)
+        }
+      })
+      it('sendEmailNotification should fail if no context', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { noContext: true }
+        })
+        try {
+          await etvas
+            .client('token')
+            .sendEmailNotification({
+              locale: 'en',
+              subject: 'test subject',
+              message: 'test message'
+            })
+        } catch (err) {
+          assert.equal(err instanceof Error, true)
+        }
       })
     })
   })

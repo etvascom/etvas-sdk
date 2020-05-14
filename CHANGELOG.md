@@ -15,3 +15,6 @@
   - etvas version property
 - `v0.1.4`
   - bug fixes regarding read and write data
+- `v0.1.5`
+  - bug fixes
+  - added `sendEmailNotification`

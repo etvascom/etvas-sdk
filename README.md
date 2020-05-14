@@ -101,6 +101,23 @@ await etvas.client(token).clear()
 await etvas.client(token).write(null)
 ```
 
+You can send a welcoming email, like this:
+
+```
+const data = {
+  locale: 'en',
+  subject: 'Welcome',
+  message: '<h1>Welcome</h1><p>You are most welcome in our application!</p>'
+}
+await etvas.client(token).sendEmailNotification(dat)
+```
+
+The subject must be a plain string (required). The message must be a
+non-empty string and you can use HTML.
+
+> TODO: describe the variables that can be used in subject and message
+> TODO: describe the classes that can be used in message HTML
+
 #### Making calls outside the purchase context
 
 There are times when the customer is not present (you do not have a token)
@@ -131,6 +148,25 @@ await etvas.client.clear('my-key')
 // or
 await etvas.client.write('my-key', null)
 ```
+
+Sending an email message is easy, as long as you know a `contextId`
+(meaning a purchaseId):
+
+```
+const data = {
+  locale: 'en',
+  subject: 'Hello',
+  message: 'We are pleased to inform you everything is ok.',
+}
+await etvas.client.sendEmailNotification(contextId, data)
+```
+
+All fields in data are required and they must be strings. The
+`contextId` must be a valid context, stored on your side when
+a purchase is made and you validate the token.
+
+> TODO: describe the variables that can be used in subject and message
+> TODO: describe the classes that can be used in message HTML
 
 ## Events
 
