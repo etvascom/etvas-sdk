@@ -26,15 +26,24 @@ describe('Client.writeData', () => {
   it('should exist', () => {
     assert.equal(typeof writeData, 'function')
   })
-  it(`should make a call to ${REQUEST_URL}/key`, async () => {
+  it(`should make a call to ${REQUEST_URL}/key`, done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
       assert.equal(request.config.url, `${REQUEST_URL}/a-key`)
       assert.equal(request.config.headers['x-api-key'], '1234')
       assert.equal(request.config.method, 'put')
       request.respondWith({ status: 200 })
+      done()
     })
-    await writeData(xhr, 'a-key', 'a-value')
+    writeData(xhr, 'a-key', 'a-value')
+  })
+  it('should write a string value', async () => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      request.respondWith({ status: 200 })
+    })
+    const response = await writeData(xhr, 'a-key', 'a-value')
+    assert.equal(response, true)
   })
   it('should fail if key is not a string', async () => {
     try {
@@ -78,14 +87,15 @@ describe('Client.writeData', () => {
       assert.equal(err instanceof Error, true)
     }
   })
-  it('should delete the data if value is null', async () => {
+  it('should delete the data if value is null', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
       assert.equal(request.config.url, `${REQUEST_URL}/a-key`)
       assert.equal(request.config.headers['x-api-key'], '1234')
       assert.equal(request.config.method, 'delete')
       request.respondWith({ status: 200 })
+      done()
     })
-    await writeData(xhr, 'a-key', null)
+    writeData(xhr, 'a-key', null)
   })
 })

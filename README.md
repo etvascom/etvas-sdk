@@ -114,10 +114,9 @@ await etvas.client(token).sendEmailNotification(dat)
 ```
 
 The subject must be a plain string (required). The message must be a
-non-empty string and you can use HTML.
+non-empty string and you can use HTML (see section about HTML messages).
 
 > TODO: describe the variables that can be used in subject and message
-> TODO: describe the classes that can be used in message HTML
 
 #### Making calls outside the purchase context
 
@@ -166,8 +165,43 @@ All fields in data are required and they must be strings. The
 `contextId` must be a valid context, stored on your side when
 a purchase is made and you validate the token.
 
+#### HTML Email messages
+
+You can use HTML and a set of classes in your message. For example:
+
+```
+const message = `
+<h1 class="title">Hello,</h1>
+<p class="text">
+  We are pleased to inform you that your date is safely stored
+  in the most secure servers on the planet!
+</p>
+<hr class="separator" />
+<div style="text-align: center;">
+  <a class="button_accent" href="#product_use_url">Access your data</a>
+</div>
+`
+
+const data = {
+  locale: 'en',
+  subject: 'Hello',
+  message
+}
+```
+
+Your message will be inline-styled (for maximum compatibility with the email
+clients out there), based on the following classes:
+
+- `title` - a center-aligned title
+- `text` - normal paragraph text
+- `card_grey` - a greyish card with rounded corners and padding
+- `card-text_grey` - a text easily visible inside the card_grey
+- `card-text_black` - a bolded text visible inside the card_grey
+- `button_accent` - an accent button (used for Call To Action)
+- `link` - a link styled with the accent color and underline
+- `separator` - a 40px height div used to separate sections
+
 > TODO: describe the variables that can be used in subject and message
-> TODO: describe the classes that can be used in message HTML
 
 ## Events
 

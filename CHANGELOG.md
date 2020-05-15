@@ -18,3 +18,7 @@
 - `v0.1.5`
   - bug fixes
   - added `sendEmailNotification`
+- `v0.1.6`
+  - improved benchmark on memory cache
+  - improved code coverage
+  - added inline styling instead of classes for sending emails

@@ -83,6 +83,16 @@ describe('Cache', () => {
       const retrieved3 = await cache.read(key, _generate)
       assert.equal(retrieved3, 'async-generated-value-2')
     })
+    it('should set never expire if expireInterval is zero', async () => {
+      const val = 'never expire'
+      const initial = await cache.read('non-expiring', () => val, {
+        expiresInterval: 0
+      })
+      assert.equal(initial, val)
+      await _wait(50)
+      const after = await cache.read('non-expiring', () => 'another value')
+      assert.equal(after, val)
+    })
   })
 
   describe('Sync', () => {
@@ -153,6 +163,16 @@ describe('Cache', () => {
       const value3 = cache.sync.read('my-key', factory)
       assert.equal(value3, 'value2')
       assert.equal(called, 2)
+    })
+    it('should set never expire if expireInterval is zero', async () => {
+      const val = 'never expire'
+      const initial = cache.sync.read('non-expiring', () => val, {
+        expiresInterval: 0
+      })
+      assert.equal(initial, val)
+      await _wait(10)
+      const after = cache.sync.read('non-expiring', () => 'another value')
+      assert.equal(after, val)
     })
   })
 })

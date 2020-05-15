@@ -35,7 +35,7 @@ describe('Client.getProfile', () => {
         done()
       })
   })
-  it('should call /user/profile', async () => {
+  it('should call /user/profile', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
       assert.equal(request.config.url, REQUEST_URL)
@@ -43,7 +43,17 @@ describe('Client.getProfile', () => {
       assert.equal(request.config.headers['x-etvas-context'], 'my context')
       assert.equal(request.config.method, 'get')
       request.respondWith({ status: 200 })
+      done()
     })
-    await getProfile(xhr, 'my context')
+    getProfile(xhr, 'my context')
+  })
+
+  it('should append contextId to data', async () => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      request.respondWith({ status: 200, response: { foo: 'bar' } })
+    })
+    const response = await getProfile(xhr, 'my context')
+    assert.equal(response.contextId, 'my context')
   })
 })
