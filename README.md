@@ -7,7 +7,6 @@
 ![npm](https://img.shields.io/npm/dt/@etvas/etvas-sdk)
 ![GitHub issues](https://img.shields.io/github/issues/etvascom/etvas-sdk)
 ![GitHub last commit](https://img.shields.io/github/last-commit/etvascom/etvas-sdk)
-![GitHub commit activity](https://img.shields.io/github/commit-activity/w/etvascom/etvas-sdk)
 
 This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers.
 
