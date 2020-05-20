@@ -1,12 +1,13 @@
 {
   "name": "@etvas/etvas-sdk",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers",
   "main": "index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
+    "lint": "eslint lib/**/*.js",
     "test": "mocha --check-leaks --recursive --bail",
     "cov": "nyc mocha --recursive --exit",
     "cov:85": "nyc --check-coverage --silent --statements 85 --lines 85 --per-file mocha --recursive --exit"

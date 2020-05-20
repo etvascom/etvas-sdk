@@ -2,6 +2,12 @@
 
 ![Unit Testing](https://github.com/etvascom/etvas-sdk/workflows/unit-testing/badge.svg)
 ![Code coverage 85%](https://github.com/etvascom/etvas-sdk/workflows/Code%20coverage%2085%25/badge.svg)
+![GitHub top language](https://img.shields.io/github/languages/top/etvascom/etvas-sdk)
+![GitHub repo size](https://img.shields.io/github/repo-size/etvascom/etvas-sdk)
+![npm](https://img.shields.io/npm/dt/@etvas/etvas-sdk)
+![GitHub issues](https://img.shields.io/github/issues/etvascom/etvas-sdk)
+![GitHub last commit](https://img.shields.io/github/last-commit/etvascom/etvas-sdk)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/w/etvascom/etvas-sdk)
 
 This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers.
 
@@ -213,50 +219,95 @@ return a `HTTP/1.1 200 OK` response when Etvas calls you.
 
 Here are the events emitted by Etvas Servers:
 
-- `purchase` - when the payment has been accepted and before the user can use the product. **Requires handling**
+- `product.purchased` - when the payment has been accepted and before the user can use the product.
 
 #### If you are using `express`, we got your back:
 
 ```
-express.use(etvas.events())
+const express = require('express')
+const bodyParser = require('body-parser')
+
+const router = express.Router()
+router.use(etvas.events())
 ```
 
-This will automatically return a `HTTP/1.1 200 OK` response to all events, wether
+This will automatically return a `HTTP/1.1 501 Not Implemented` response to all events, wether
 you wish or not to handle them. If you do, here is how you should do it:
 
 ```
-etvas.events.on('purchase', async data => {
+const express = require('express')
+const bodyParser = require('body-parser')
+const assert = require('assert')
+
+const router = express.Router()
+router.use('/event', etvas.events())
+
+etvas.events.on('product.purchase', async data => {
   // manage data
-  //...
+  assert.strictEqual(typeof data.purchaseId, 'string')
+  assert.strictEqual(typeof data.productId, 'string)
 
   // return truthy value for a 200 OK response.
   // return falsy or throw an error to block the purchase flow.
   return true
 })
+
+const app = express()
+app.use('/api', router)
 ```
 
 #### If you are not using `express`
 
 You need to have a slightly different approach. The example below
-is still for `express` but yoy can adapt it for anything out there:
+uses `http` NodeJS implementation.
 
 ```
-const path = etvas.events.path
-router.post(path, (req, res, next) => {
-  const { event } = req.body
-  switch (event.type) {
-    case etvas.events.purchase:
-      // manage purchase data
-      //...
-      break
+const http = require('http')
+const assert = require('assert')
+
+const server = http.createServer((req, res) => {
+  res.setHeader('Content-Type', 'application/json')
+
+  if (req.method !== 'POST' || req.url !== '/events') {
+    res.statusCode = 405
+    res.end('{"error":"METHOD_NOT_ALLOWED"}')
+    return
   }
 
-  // return a 200 OK status
-  res.status(200).send({ success: true })
+  let body = ''
 
-  // or return a 4xx or 5xx error
-  res.status(500).send({ error: 'Could not process this request' })
+  req.on('data', (data) => {
+    body += data
+  });
+
+  req.on('end', () => {
+    let parsed
+
+    try {
+      parsed = JSON.parse(body);
+    } catch (e) {
+      res.statusCode = 400
+      res.end('{"error":"JSON only!"}')
+      return
+    }
+
+    switch (parsed.name) {
+      case 'product.purchased':
+        assert.strictEqual(typeof parsed.payload.purchaseId, 'string')
+        assert.strictEqual(typeof parsed.payload.productId, 'string)
+        res.statusCode = 204
+        res.end()
+      default:
+        // unhandled event:
+        res.statusCode = 501
+        res.end()
+    }
+  })
 })
+
+server.listen(3000, () => {
+  console.log('Server running at http://localhost:3000/');
+});
 ```
 
 ## Running tests and coverage
