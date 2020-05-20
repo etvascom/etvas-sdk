@@ -22,3 +22,8 @@
   - improved benchmark on memory cache
   - improved code coverage
   - added inline styling instead of classes for sending emails
+- `v0.1.7`
+  - add express route handler for events
+  - add proxy wrapper for events
+  - add `product.purchased` event
+  - add lint npm script
