@@ -26,3 +26,6 @@
   - add express route handler for events
   - add proxy wrapper for events
   - add lint npm script
+- `v0.2.0`
+  - more relaxed event registrations
+  - bugfixes and chores now increment build version, features increments minor version
