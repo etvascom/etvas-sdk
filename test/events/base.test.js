@@ -12,7 +12,7 @@ const _defaultOptions = {
   apiKey: '12345678'
 }
 
-const EVENT_PRODUCT_PURCHASED = 'product.purchased'
+const TEST_EVENT_NAME = 'event.test.name'
 
 class MockRes {
   constructor () {
@@ -26,6 +26,7 @@ class MockRes {
 
   json (value) {
     this._data.json = value
+    this._data.sent = true
     return this
   }
 
@@ -66,49 +67,94 @@ describe('Events', () => {
   describe('Event proxy', () => {
     beforeEach(() => {
       try {
-        proxy.off(EVENT_PRODUCT_PURCHASED)
+        proxy.off(TEST_EVENT_NAME)
       } catch (e) { }
     })
     it('should be a function', () => {
       assert.strictEqual(typeof proxy, 'function')
     })
-    it(`should add handler for ${EVENT_PRODUCT_PURCHASED}`, () => {
+    it('should not throw for registering any event', () => {
       assert.doesNotThrow(() => {
-        proxy.on(EVENT_PRODUCT_PURCHASED, async () => true)
+        proxy.on(TEST_EVENT_NAME, async () => true)
       })
     })
-    it('should throw if handler already installed', () => {
-      proxy.on(EVENT_PRODUCT_PURCHASED, async () => true)
+    it('should throw for registering empty event name', () => {
       assert.throws(() => {
-        proxy.on(EVENT_PRODUCT_PURCHASED, async () => true)
+        proxy.on('', async () => true)
       })
     })
-    it('should throw for installing unknown event handler', () => {
+    it('should throw for registering undefined event name', () => {
       assert.throws(() => {
-        proxy.on('non-existent-test-event', async () => true)
+        proxy.on(undefined, async () => true)
       })
     })
-    it('should throw for uninstalling unknown event handler', () => {
+    it('should throw for registering null event name', () => {
       assert.throws(() => {
-        proxy.off('non-existent-test-event')
+        proxy.on(null, async () => true)
       })
     })
-    it('should throw for uninstalling non-existent event handler', () => {
+    it('should throw for registering object as event name', () => {
       assert.throws(() => {
-        proxy.off(EVENT_PRODUCT_PURCHASED)
+        proxy.on({ foo: 'bar' }, async () => true)
+      })
+    })
+
+    it('should throw for unregistering empty event name', () => {
+      assert.throws(() => {
+        proxy.off('', async () => true)
+      })
+    })
+    it('should throw for unregistering undefined event name', () => {
+      assert.throws(() => {
+        proxy.off(undefined, async () => true)
+      })
+    })
+    it('should throw for unregistering null event name', () => {
+      assert.throws(() => {
+        proxy.off(null, async () => true)
+      })
+    })
+    it('should throw for unregistering object as event name', () => {
+      assert.throws(() => {
+        proxy.off({ foo: 'bar' }, async () => true)
+      })
+    })
+
+    it('should throw if handler is not a function', () => {
+      assert.throws(() => {
+        proxy.on(TEST_EVENT_NAME, { handler: () => true })
+      })
+    })
+    it('should not throw for uninstalling any event', () => {
+      assert.doesNotThrow(() => {
+        proxy.off(TEST_EVENT_NAME)
       })
     })
     it('should not throw for uninstalling installed event handler', () => {
-      proxy.on(EVENT_PRODUCT_PURCHASED, async () => true)
+      proxy.on(TEST_EVENT_NAME, async () => true)
       assert.doesNotThrow(() => {
-        proxy.off(EVENT_PRODUCT_PURCHASED)
+        proxy.off(TEST_EVENT_NAME)
       })
     })
-    it('should throw for uninstalling removed event handler', () => {
-      proxy.on(EVENT_PRODUCT_PURCHASED, async () => true)
-      proxy.off(EVENT_PRODUCT_PURCHASED)
+    it('should not throw for uninstalling removed event handler', () => {
+      proxy.on(TEST_EVENT_NAME, async () => true)
+      proxy.off(TEST_EVENT_NAME)
+      assert.doesNotThrow(() => {
+        proxy.off(TEST_EVENT_NAME)
+        proxy.off(TEST_EVENT_NAME)
+      })
+    })
+    it('should throw if registering two handlers for same event', () => {
+      proxy.on(TEST_EVENT_NAME, async () => true)
       assert.throws(() => {
-        proxy.off(EVENT_PRODUCT_PURCHASED)
+        proxy.on(TEST_EVENT_NAME, async () => true)
+      })
+    })
+    it('should not throw if double register with the same handler', () => {
+      const handler = async () => true
+      proxy.on(TEST_EVENT_NAME, handler)
+      assert.doesNotThrow(() => {
+        proxy.on(TEST_EVENT_NAME, handler)
       })
     })
     it('should return 500 if no body', async () => {
@@ -121,7 +167,7 @@ describe('Events', () => {
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 500 if no name in body', async () => {
-      const req = new MockReq({}, { name: undefined, payload: { foo: 'bar' } })
+      const req = new MockReq({ 'x-api-key': '12345678' }, { name: undefined, payload: { foo: 'bar' } })
       const res = new MockRes()
       const handler = proxy()
       try {
@@ -130,36 +176,34 @@ describe('Events', () => {
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 500 if no x-api-key in header', async () => {
-      const req = new MockReq({}, { name: EVENT_PRODUCT_PURCHASED, payload: { foo: 'bar' } })
+      const req = new MockReq({}, { name: TEST_EVENT_NAME, payload: { foo: 'bar' } })
       const res = new MockRes()
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 500)
     })
-    it('should return 500 for invalid event name', async () => {
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: 'invalid-test-event-name', payload: { foo: 'bar' } })
+    it('should return 500 if x-api-key invalid', async () => {
+      const req = new MockReq({ 'x-api-key': '1234567' }, { name: TEST_EVENT_NAME, payload: { foo: 'bar' } })
       const res = new MockRes()
       const handler = proxy()
-      try {
-        await handler(req, res)
-      } catch (e) { }
+      await handler(req, res)
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 501 if no handlers specified', async () => {
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: EVENT_PRODUCT_PURCHASED, payload: { purchaseId: '1234', productId: '2345' } })
+      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: { purchaseId: '1234', productId: '2345' } })
       const res = new MockRes()
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 501)
+      assert.strictEqual(res._data.json !== null, true)
       assert.strictEqual(res._data.sent, true)
     })
-
-    it(`should call handler for ${EVENT_PRODUCT_PURCHASED} and return 204 if true`, async () => {
+    it('should call handler for event and return 204 if true', async () => {
       const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: EVENT_PRODUCT_PURCHASED, payload: expected })
+      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: expected })
       const res = new MockRes()
       let customHandlerCalled = null
-      proxy.on(EVENT_PRODUCT_PURCHASED, async payload => {
+      proxy.on(TEST_EVENT_NAME, async payload => {
         customHandlerCalled = { ...payload }
         return true
       })
@@ -168,29 +212,13 @@ describe('Events', () => {
       assert.strictEqual(res._data.status, 204)
       assert.strictEqual(res._data.sent, true)
       assert.deepStrictEqual(customHandlerCalled, expected)
-      proxy.off(EVENT_PRODUCT_PURCHASED)
     })
-    it(`should call handler for ${EVENT_PRODUCT_PURCHASED} and return 500 if false`, async () => {
+    it('should return response with 200 if response', async () => {
       const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: EVENT_PRODUCT_PURCHASED, payload: expected })
+      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: expected })
       const res = new MockRes()
       let customHandlerCalled = null
-      proxy.on(EVENT_PRODUCT_PURCHASED, async payload => {
-        customHandlerCalled = { ...payload }
-        return false
-      })
-      const handler = proxy()
-      await handler(req, res)
-      assert.strictEqual(res._data.status, 500)
-      assert.strictEqual(res._data.sent, true)
-      assert.deepStrictEqual(customHandlerCalled, expected)
-    })
-    it('should return response with 200 if not boolean', async () => {
-      const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: EVENT_PRODUCT_PURCHASED, payload: expected })
-      const res = new MockRes()
-      let customHandlerCalled = null
-      proxy.on(EVENT_PRODUCT_PURCHASED, async payload => {
+      proxy.on(TEST_EVENT_NAME, async payload => {
         customHandlerCalled = { ...payload }
         return { foo: 'bar' }
       })
@@ -202,14 +230,27 @@ describe('Events', () => {
     })
     it('should return 500 if handler throws error', async () => {
       const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: EVENT_PRODUCT_PURCHASED, payload: expected })
+      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: expected })
       const res = new MockRes()
-      proxy.on(EVENT_PRODUCT_PURCHASED, async payload => {
+      proxy.on(TEST_EVENT_NAME, async () => {
         throw new Error('something went wrong')
       })
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 500)
+      assert.deepStrictEqual(res._data.json, { error: 'something went wrong' })
+    })
+    it('should not call handler if uninstalled', async () => {
+      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: { productId: '1234', purchaseId: '2345' } })
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async () => {
+        throw new Error('something went wrong')
+      })
+      proxy.off(TEST_EVENT_NAME)
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 501)
+      assert.strictEqual(res._data.json !== null, true)
     })
   })
 })
