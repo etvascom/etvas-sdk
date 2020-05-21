@@ -215,6 +215,122 @@ describe('Etvas SDK', () => {
           assert.equal(err instanceof Error, true)
         }
       })
+      it('customerProfile should not use cached value if different token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/user/profile', {
+          status: 200,
+          response: { data: { foo: 'bar' } }
+        })
+        await etvas.client('token1').getCustomerProfile()
+        await etvas.client('token2').getCustomerProfile()
+        await etvas.client('token3').getCustomerProfile()
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [
+          { token: 'token1' },
+          { token: 'token2' },
+          { token: 'token3' }
+        ])
+      })
+      it('read should not use cached value if different token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/external-data/context-1234', {
+          status: 200,
+          response: { data: '{"foo":"bar"}' }
+        })
+        await etvas.client('token1').read()
+        await etvas.client('token2').read()
+        await etvas.client('token3').read()
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [
+          { token: 'token1' },
+          { token: 'token2' },
+          { token: 'token3' }
+        ])
+      })
+      it('write should not use cached value if different token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/external-data/context-1234', {
+          status: 200
+        })
+        await etvas.client('token1').write('one value')
+        await etvas.client('token2').write('two values')
+        await etvas.client('token3').write('three values')
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [
+          { token: 'token1' },
+          { token: 'token2' },
+          { token: 'token3' }
+        ])
+      })
+      it('sendEmail should not use cached value if different token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/user/notify', {
+          status: 200
+        })
+
+        const mail = {
+          locale: 'en',
+          subject: 'test subject',
+          message: 'test message'
+        }
+
+        await etvas.client('token1').sendEmailNotification(mail)
+        await etvas.client('token2').sendEmailNotification(mail)
+        await etvas.client('token3').sendEmailNotification(mail)
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [
+          { token: 'token1' },
+          { token: 'token2' },
+          { token: 'token3' }
+        ])
+      })
+      it('customerProfile should use cached value if same token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/user/profile', {
+          status: 200,
+          response: { data: { foo: 'bar' } }
+        })
+        await etvas.client('token1').getCustomerProfile()
+        await etvas.client('token1').getCustomerProfile()
+        await etvas.client('token1').getCustomerProfile()
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [{ token: 'token1' }])
+      })
       it('sendEmailNotification should fail if no context', async () => {
         moxios.stubRequest('/verify-token', {
           status: 200,

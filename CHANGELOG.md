@@ -31,3 +31,6 @@
   - bugfixes and chores now increment build version, features increments minor version
 - `v0.2.1`
   - fixed incorrect caching bug
+- `v0.2.2`
+  - fixed further caching bugs
+  - added more tests
