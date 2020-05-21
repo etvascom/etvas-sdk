@@ -29,3 +29,5 @@
 - `v0.2.0`
   - more relaxed event registrations
   - bugfixes and chores now increment build version, features increments minor version
+- `v0.2.1`
+  - fixed incorrect caching bug
