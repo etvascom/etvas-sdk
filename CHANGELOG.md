@@ -25,5 +25,4 @@
 - `v0.1.7`
   - add express route handler for events
   - add proxy wrapper for events
-  - add `product.purchased` event
   - add lint npm script
