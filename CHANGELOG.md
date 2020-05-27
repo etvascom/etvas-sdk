@@ -34,3 +34,5 @@
 - `v0.2.2`
   - fixed further caching bugs
   - added more tests
+- `v0.2.3`
+  - implemented `clear` method on client

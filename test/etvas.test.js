@@ -88,11 +88,17 @@ describe('Etvas SDK', () => {
     it('should have a write function', () => {
       assert.equal(typeof etvas.client.write, 'function')
     })
+    it('should have a clear function', () => {
+      assert.equal(typeof etvas.client.clear, 'function')
+    })
     it('should have a read function in context', () => {
       assert.equal(typeof etvas.client('token').read, 'function')
     })
     it('should have a write function in context', () => {
       assert.equal(typeof etvas.client('token').write, 'function')
+    })
+    it('should have a clear function in context', () => {
+      assert.equal(typeof etvas.client('token').clear, 'function')
     })
     describe('no-context', () => {
       it('read should call correct url', done => {
@@ -137,6 +143,20 @@ describe('Etvas SDK', () => {
         })
         etvas.client.write('two-keys', null)
       })
+      it('clear should delete with null value', done => {
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.equal(request.config.url, `${REQUEST_URL}/clear-key`)
+          assert.equal(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.equal(request.config.method, 'delete')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client.clear('clear-key')
+      })
     })
     describe('with-context', () => {
       beforeEach(() => {
@@ -173,7 +193,7 @@ describe('Etvas SDK', () => {
           assert.equal(err instanceof Error, true)
         }
       })
-      it('write should call verify token first', async () => {
+      it('write should call verify token first', done => {
         moxios.stubRequest(`${REQUEST_URL}/context-id-12345`, {
           status: 200
         })
@@ -190,8 +210,30 @@ describe('Etvas SDK', () => {
             status: 200,
             response: { contextId: 'context-id-12345' }
           })
+          done()
         })
-        await etvas.client('token').write('a-write-key', 'a-value')
+        etvas.client('token').write('a-write-key', 'a-value')
+      })
+      it('clear should call verify token first', done => {
+        moxios.stubRequest(`${REQUEST_URL}/context-id-12345`, {
+          status: 200
+        })
+
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.equal(request.config.url, '/verify-token')
+          assert.equal(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.equal(request.config.method, 'post')
+          request.respondWith({
+            status: 200,
+            response: { contextId: 'context-id-12345' }
+          })
+          done()
+        })
+        etvas.client('token').clear('a-write-key')
       })
       it('write should fail if no context', async () => {
         moxios.stubRequest('/verify-token', {
@@ -200,6 +242,17 @@ describe('Etvas SDK', () => {
         })
         try {
           await etvas.client('token').write('key-id', 'value')
+        } catch (err) {
+          assert.equal(err instanceof Error, true)
+        }
+      })
+      it('clear should fail if no context', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { noContext: true }
+        })
+        try {
+          await etvas.client('token').clear('key-id')
         } catch (err) {
           assert.equal(err instanceof Error, true)
         }
@@ -283,6 +336,28 @@ describe('Etvas SDK', () => {
           { token: 'token3' }
         ])
       })
+      it('clear should not use cached value if different token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/external-data/context-1234', {
+          status: 200
+        })
+        await etvas.client('token1').clear()
+        await etvas.client('token2').clear()
+        await etvas.client('token3').clear()
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [
+          { token: 'token1' },
+          { token: 'token2' },
+          { token: 'token3' }
+        ])
+      })
       it('sendEmail should not use cached value if different token', async () => {
         moxios.stubRequest('/verify-token', {
           status: 200,
@@ -337,13 +412,11 @@ describe('Etvas SDK', () => {
           response: { noContext: true }
         })
         try {
-          await etvas
-            .client('token')
-            .sendEmailNotification({
-              locale: 'en',
-              subject: 'test subject',
-              message: 'test message'
-            })
+          await etvas.client('token').sendEmailNotification({
+            locale: 'en',
+            subject: 'test subject',
+            message: 'test message'
+          })
         } catch (err) {
           assert.equal(err instanceof Error, true)
         }
