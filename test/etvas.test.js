@@ -162,6 +162,14 @@ describe('Etvas SDK', () => {
       beforeEach(() => {
         cache.clear({ all: true })
       })
+      it('should fail with no context specified', () => {
+        try {
+          etvas.client(null)
+        } catch (err) {
+          assert.strictEqual(err instanceof TypeError, false)
+          assert.strictEqual(err.message.indexOf('validateToken') > 0, true)
+        }
+      })
       it('read should call verify token first', async () => {
         moxios.stubRequest(`${REQUEST_URL}/context-id-1234`, {
           status: 200

@@ -36,3 +36,5 @@
   - added more tests
 - `v0.2.3`
   - implemented `clear` method on client
+- `v0.2.4`
+  - fixed missing token in client context validation
