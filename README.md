@@ -119,9 +119,7 @@ await etvas.client(token).sendEmailNotification(dat)
 ```
 
 The subject must be a plain string (required). The message must be a
-non-empty string and you can use HTML (see section about HTML messages).
-
-> TODO: describe the variables that can be used in subject and message
+non-empty string and you can use HTML (see section about [HTML messages](#email-messages)).
 
 #### Making calls outside the purchase context
 
@@ -170,7 +168,7 @@ All fields in data are required and they must be strings. The
 `contextId` must be a valid context, stored on your side when
 a purchase is made and you validate the token.
 
-#### HTML Email messages
+#### Email messages
 
 You can use HTML and a set of classes in your message. For example:
 
@@ -189,7 +187,7 @@ const message = `
 
 const data = {
   locale: 'en',
-  subject: 'Hello',
+  subject: 'Hello #user_first_name',
   message
 }
 ```
@@ -206,7 +204,13 @@ clients out there), based on the following classes:
 - `link` - a link styled with the accent color and underline
 - `separator` - a 40px height div used to separate sections
 
-> TODO: describe the variables that can be used in subject and message
+Please note the use of variables inside your `message` and `subject`. They will be automatically replaced just before sending the message. All the variables are prefixed with a `#`, and the complete list is:
+
+- `#user_first_name` - the user's first name
+- `#user_last_name` - the user's last name
+- `#product_name` - the product name
+- `#portal_url` - the URL for the portal from which the product was purchased
+- `#product_use_url` - the direct link URL for launching the product
 
 ## Events
 
@@ -230,8 +234,7 @@ const router = express.Router()
 router.use(etvas.events())
 ```
 
-This will automatically return a `HTTP/1.1 501 Not Implemented` response to all events, wether
-you wish or not to handle them. If you do, here is how you should do it:
+This will automatically return a `HTTP/1.1 501 Not Implemented` response to all events, wether you wish or not to handle them. If you do, here is how you should do it:
 
 ```
 const express = require('express')
@@ -309,22 +312,87 @@ server.listen(3000, () => {
 });
 ```
 
+#### Event aliases
+
+If you have one handler for multiple events, you can use aliases or array of event names like this:
+
+Use an array for registering multiple events on one handler:
+
+```
+//
+
+etvas.events.on(['product.suspended', 'product.canceled'], async data => {
+  // manage data
+  assert.strictEqual(typeof data.purchaseId, 'string')
+  assert.strictEqual(typeof data.productId, 'string)
+
+  // return truthy value for a 200 OK response.
+  // return falsy or throw an error to block the purchase flow.
+  return true
+})
+```
+
+Or you can use alias function:
+
+```
+// First, register an event
+etvas.events.on('product.suspended'], async data => {
+  // manage data
+  assert.strictEqual(typeof data.purchaseId, 'string')
+  assert.strictEqual(typeof data.productId, 'string)
+
+  // return truthy value for a 200 OK response.
+  // return falsy or throw an error to block the purchase flow.
+  return true
+})
+
+// And add aliases to it:
+etvas.events.alias('product.suspended', 'product.canceled')
+
+// or even with an array:
+etvas.events.alias('product.suspended', ['product.canceled', 'user.deleted'])
+```
+
+> **WARNING**: When you unregister an event name, the other aliases you might already setup are not automatically unregistered. But, when using `off`, you can also use an array, not just an event name.
+
+#### Unregister event handlers
+
+This is pretty much a one-liner, and - you, guessed - must use the `off` function:
+
+```
+etvas.events.off('product.canceled')
+```
+
+Of course, you can use arrays, as well:
+
+```
+etvas.events.off([
+  'product.canceled',
+  'product.suspended',
+  'product.purchased'
+])
+```
+
 ## Running tests and coverage
 
 We are using [mocha](https://mochajs.org) and standard NodeJS `assert` library.
 To run all tests, execute:
 
 ```
+
 git clone https://github.com/etvascom/etvas-sdk.git
 cd etvas-sdk
 npm ci && npm run test
+
 ```
 
 For code coverage, we use [istanbul](https://istanbul.js.org/). For
 a code coverage report, run:
 
 ```
+
 npm run cov
+
 ```
 
 ## Semver
@@ -341,3 +409,7 @@ Check back on this page to read the ChangeLog
 - [Homepage](README.md)
 - [Changelog](CHANGELOG.md)
 - [Issues](https://github.com/etvascom/etvas-sdk/issues)
+
+```
+
+```

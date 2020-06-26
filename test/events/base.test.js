@@ -13,30 +13,31 @@ const _defaultOptions = {
 }
 
 const TEST_EVENT_NAME = 'event.test.name'
+const TEST_EVENT_ALIAS = 'event.test.alias'
 
 class MockRes {
-  constructor () {
+  constructor() {
     this._data = { status: null, json: null, sent: false }
   }
 
-  status (value) {
+  status(value) {
     this._data.status = value
     return this
   }
 
-  json (value) {
+  json(value) {
     this._data.json = value
     this._data.sent = true
     return this
   }
 
-  send () {
+  send() {
     this._data.sent = true
     return this
   }
 }
 
-function MockReq (headers, body) {
+function MockReq(headers, body) {
   this.headers = headers
   this.body = body
 
@@ -64,11 +65,15 @@ describe('Events', () => {
   it('should have an off function', () => {
     assert.strictEqual(typeof etvas.events.off, 'function')
   })
+  it('should have an alias function', () => {
+    assert.strictEqual(typeof etvas.events.alias, 'function')
+  })
   describe('Event proxy', () => {
     beforeEach(() => {
       try {
         proxy.off(TEST_EVENT_NAME)
-      } catch (e) { }
+        proxy.off(TEST_EVENT_ALIAS)
+      } catch (e) {}
     })
     it('should be a function', () => {
       assert.strictEqual(typeof proxy, 'function')
@@ -78,9 +83,19 @@ describe('Events', () => {
         proxy.on(TEST_EVENT_NAME, async () => true)
       })
     })
+    it('should accept array as event name', () => {
+      assert.doesNotThrow(() => {
+        proxy.on([TEST_EVENT_NAME, TEST_EVENT_ALIAS], async () => true)
+      })
+    })
     it('should throw for registering empty event name', () => {
       assert.throws(() => {
         proxy.on('', async () => true)
+      })
+    })
+    it('should throw if one of array elements is empty', () => {
+      assert.throws(() => {
+        proxy.on([TEST_EVENT_NAME, TEST_EVENT_ALIAS, ''], async () => true)
       })
     })
     it('should throw for registering undefined event name', () => {
@@ -88,9 +103,22 @@ describe('Events', () => {
         proxy.on(undefined, async () => true)
       })
     })
+    it('should throw if one of array elements is undefined', () => {
+      assert.throws(() => {
+        proxy.on(
+          [TEST_EVENT_NAME, TEST_EVENT_ALIAS, undefined],
+          async () => true
+        )
+      })
+    })
     it('should throw for registering null event name', () => {
       assert.throws(() => {
         proxy.on(null, async () => true)
+      })
+    })
+    it('should throw if one of array elements is null', () => {
+      assert.throws(() => {
+        proxy.on([TEST_EVENT_NAME, TEST_EVENT_ALIAS, null], async () => true)
       })
     })
     it('should throw for registering object as event name', () => {
@@ -98,7 +126,14 @@ describe('Events', () => {
         proxy.on({ foo: 'bar' }, async () => true)
       })
     })
-
+    it('should throw if one of array elements is an object', () => {
+      assert.throws(() => {
+        proxy.on(
+          [TEST_EVENT_NAME, TEST_EVENT_ALIAS, { foo: 'bar' }],
+          async () => true
+        )
+      })
+    })
     it('should throw for unregistering empty event name', () => {
       assert.throws(() => {
         proxy.off('', async () => true)
@@ -157,40 +192,80 @@ describe('Events', () => {
         proxy.on(TEST_EVENT_NAME, handler)
       })
     })
+    it('should not throw when calling alias', () => {
+      const handler = async () => true
+      proxy.on(TEST_EVENT_NAME, handler)
+      assert.doesNotThrow(() => {
+        proxy.alias(TEST_EVENT_NAME, TEST_EVENT_ALIAS)
+      })
+    })
+    it('an alias should have the same handler', () => {
+      const handler = async () => true
+      proxy.on(TEST_EVENT_NAME, handler)
+      proxy.alias(TEST_EVENT_NAME, TEST_EVENT_ALIAS)
+      assert.doesNotThrow(() => {
+        // try to register the same handler
+        proxy.on(TEST_EVENT_ALIAS, handler)
+      })
+      assert.throws(() => {
+        // try to register another handler
+        proxy.on(TEST_EVENT_ALIAS, async () => true)
+      })
+    })
+    it('should throw for aliasing and unregistered event', () => {
+      assert.throws(() => {
+        proxy.alias(TEST_EVENT_NAME, TEST_EVENT_ALIAS)
+      })
+    })
     it('should return 500 if no body', async () => {
       const req = new MockReq({}, null)
       const res = new MockRes()
       const handler = proxy()
       try {
         await handler(req, res)
-      } catch (e) { }
+      } catch (e) {}
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 500 if no name in body', async () => {
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: undefined, payload: { foo: 'bar' } })
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: undefined, payload: { foo: 'bar' } }
+      )
       const res = new MockRes()
       const handler = proxy()
       try {
         await handler(req, res)
-      } catch (e) { }
+      } catch (e) {}
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 500 if no x-api-key in header', async () => {
-      const req = new MockReq({}, { name: TEST_EVENT_NAME, payload: { foo: 'bar' } })
+      const req = new MockReq(
+        {},
+        { name: TEST_EVENT_NAME, payload: { foo: 'bar' } }
+      )
       const res = new MockRes()
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 500 if x-api-key invalid', async () => {
-      const req = new MockReq({ 'x-api-key': '1234567' }, { name: TEST_EVENT_NAME, payload: { foo: 'bar' } })
+      const req = new MockReq(
+        { 'x-api-key': '1234567' },
+        { name: TEST_EVENT_NAME, payload: { foo: 'bar' } }
+      )
       const res = new MockRes()
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 500)
     })
     it('should return 501 if no handlers specified', async () => {
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: { purchaseId: '1234', productId: '2345' } })
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        {
+          name: TEST_EVENT_NAME,
+          payload: { purchaseId: '1234', productId: '2345' }
+        }
+      )
       const res = new MockRes()
       const handler = proxy()
       await handler(req, res)
@@ -200,7 +275,10 @@ describe('Events', () => {
     })
     it('should call handler for event and return 204 if true', async () => {
       const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: expected })
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: TEST_EVENT_NAME, payload: expected }
+      )
       const res = new MockRes()
       let customHandlerCalled = null
       proxy.on(TEST_EVENT_NAME, async payload => {
@@ -215,7 +293,10 @@ describe('Events', () => {
     })
     it('should return response with 200 if response', async () => {
       const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: expected })
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: TEST_EVENT_NAME, payload: expected }
+      )
       const res = new MockRes()
       let customHandlerCalled = null
       proxy.on(TEST_EVENT_NAME, async payload => {
@@ -230,7 +311,10 @@ describe('Events', () => {
     })
     it('should return 500 if handler throws error', async () => {
       const expected = { purchaseId: '1234', productId: '2345' }
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: expected })
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: TEST_EVENT_NAME, payload: expected }
+      )
       const res = new MockRes()
       proxy.on(TEST_EVENT_NAME, async () => {
         throw new Error('something went wrong')
@@ -241,7 +325,13 @@ describe('Events', () => {
       assert.deepStrictEqual(res._data.json, { error: 'something went wrong' })
     })
     it('should not call handler if uninstalled', async () => {
-      const req = new MockReq({ 'x-api-key': '12345678' }, { name: TEST_EVENT_NAME, payload: { productId: '1234', purchaseId: '2345' } })
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        {
+          name: TEST_EVENT_NAME,
+          payload: { productId: '1234', purchaseId: '2345' }
+        }
+      )
       const res = new MockRes()
       proxy.on(TEST_EVENT_NAME, async () => {
         throw new Error('something went wrong')

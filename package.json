@@ -1,6 +1,6 @@
 {
   "name": "@etvas/etvas-sdk",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "This package is to be used with all Etvas Apps backends and includes all the common resources related Server 2 Server communication with Etvas Servers",
   "main": "index.js",
   "directories": {

@@ -40,3 +40,8 @@
   - fixed missing token in client context validation
 - `v0.2.5`
   - Better events error response when axios proxy error
+- `v0.2.6`
+  - Accept array of strings as well as a string for name when registering an event
+  - Accept array of strings as well as a string for name when unregistering an event
+  - Added utility function `alias`
+  - Added tests for array syntax and `alias`
