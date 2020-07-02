@@ -193,6 +193,46 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('productVariants - used in init options', () => {
+    it('should not fail with undefined', () => {
+      assert.doesNotThrow(() => {
+        validate({ productVariants: undefined }, 'TEST')
+      })
+    })
+    it('should not fail with undefined', () => {
+      assert.doesNotThrow(() => {
+        validate({ productVariants: null }, 'TEST')
+      })
+    })
+    it('should fail with string', () => {
+      assert.throws(() => {
+        validate({ productVariants: 'foo' }, 'TEST')
+      })
+    })
+    it('should fail with bool', () => {
+      assert.throws(() => {
+        validate({ productVariants: true }, 'TEST')
+      })
+    })
+    it('should fail with empty object', () => {
+      assert.throws(() => {
+        validate({ productVariants: {} }, 'TEST')
+      })
+    })
+    it('should not fail with valid object', () => {
+      assert.doesNotThrow(() => {
+        validate(
+          {
+            productVariants: {
+              '12345678-1234-1234-1234-1234567890ab': 'first',
+              '23456789-1234-1234-1234-1234567890ab': 'second'
+            }
+          },
+          'TEST'
+        )
+      })
+    })
+  })
   describe('contextId - used in API calls as x-etvas-context-id', () => {
     it('should fail with undefined', () => {
       assert.throws(() => {

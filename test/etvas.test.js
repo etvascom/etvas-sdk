@@ -13,6 +13,13 @@ const _defaultOptions = {
   apiKey: '12345678'
 }
 
+const _additionalOptions = {
+  productVariants: {
+    'key-1234': 'first',
+    'key-2345': 'second'
+  }
+}
+
 const _wait = timeout =>
   new Promise(resolve => {
     setTimeout(() => {
@@ -33,10 +40,24 @@ describe('Etvas SDK', () => {
         etvas.init({ ..._defaultOptions })
       })
     })
+    it('should not throw if options and additional options are set', () => {
+      assert.doesNotThrow(() => {
+        etvas.init({ ..._defaultOptions, ..._additionalOptions })
+      })
+    })
     it('should preserve config once init is called', async () => {
       etvas.init({ ..._defaultOptions })
       await _wait(10)
       assert.equal(config.get('apiURL'), _defaultOptions.apiURL)
+    })
+    it('should preserve additional options once init is called', async () => {
+      etvas.init({ ..._defaultOptions, ..._additionalOptions })
+      await _wait(10)
+      assert.equal(config.get('apiURL'), _defaultOptions.apiURL)
+      assert.deepStrictEqual(
+        config.get('productVariants'),
+        _additionalOptions.productVariants
+      )
     })
     it('should throw if no apiKey', () => {
       assert.throws(() => {
@@ -99,6 +120,42 @@ describe('Etvas SDK', () => {
     })
     it('should have a clear function in context', () => {
       assert.equal(typeof etvas.client('token').clear, 'function')
+    })
+    it('should have a getProductVariant function in context', () => {
+      assert.equal(typeof etvas.client('token').getProductVariant, 'function')
+    })
+    it('should throw on getProductVariants if no configuration given', async () => {
+      moxios.wait(() => {
+        const request = moxios.requests.mostRecent()
+        request.respondWith({
+          status: 200,
+          response: { contextId: '1234', productId: 'key-1234' }
+        })
+      })
+      try {
+        await etvas.client('token').getProductVariant('key-1234')
+      } catch (err) {
+        assert.strictEqual(err instanceof Error, true)
+      }
+    })
+    it('should identify product variant if configuration given', async () => {
+      moxios.stubRequest('/verify-token', {
+        status: 200,
+        response: { contextId: '1234', productId: 'key-1234' }
+      })
+      // moxios.wait(() => {
+      //   const request = moxios.requests.mostRecent()
+      //   request.respondWith({
+      //     status: 200,
+      //     response: { contextId: '1234', productId: 'key-1234' }
+      //   })
+      // })
+      etvas.init({
+        ..._defaultOptions,
+        ..._additionalOptions
+      })
+      const result = await etvas.client('token').getProductVariant('key-1234')
+      assert.strictEqual(result, 'first')
     })
     describe('no-context', () => {
       it('read should call correct url', done => {

@@ -36,6 +36,24 @@ const config = {
 etvas.init(config)
 ```
 
+If you have multiple product variants, you can easily put them here:
+
+```
+const etvas = require('@etvas/etvas-sdk')
+
+const config = {
+  apiURL: 'https://api.etvas.com',
+  apiKey: '1234-1234-1234-1234',
+  productVariants: {
+    'key-1234': 'white',
+    'key-2345': 'green'
+  }
+}
+etvas.init(config)
+```
+
+(see more on variants [in context](#variants-in-context) or [outside context](#variants-outside-context)
+
 See what version you are currently using with:
 
 ```
@@ -121,6 +139,30 @@ await etvas.client(token).sendEmailNotification(dat)
 The subject must be a plain string (required). The message must be a
 non-empty string and you can use HTML (see section about [HTML messages](#email-messages)).
 
+#### Variants in context
+
+A variant is, for example, a color on your product which dictates how the calls are made to your API or how the UI is rendered. If you configured the variants in your initialization process, you can use a token or a `productId` to easily identify the name (or whatever value you put on the configuration) of the variant.
+
+For example:
+
+```
+etvas.init({
+  ...options,
+  productVariants: {
+    'key-1234': 'white',
+    'key-2345': 'green'
+  }
+})
+
+// when you receive the token:
+const token = '...'
+const variant = await etvas.client(token).getProductVariant()
+
+// the variant will have a value of white or green, depending on the information contained in token
+```
+
+Please note the `async` function here, because it might verify the token with an Axios call (if not already cached). In most cases though, the call will resolve immediately, as the token verification result is already cached.
+
 #### Making calls outside the purchase context
 
 There are times when the customer is not present (you do not have a token)
@@ -167,6 +209,31 @@ await etvas.client.sendEmailNotification(contextId, data)
 All fields in data are required and they must be strings. The
 `contextId` must be a valid context, stored on your side when
 a purchase is made and you validate the token.
+
+#### Variants outside context
+
+A variant is, for example, a color on your product which dictates how the calls are made to your API or how the UI is rendered. If you configured the variants in your initialization process, you can use a `productId` to easily identify the name (or whatever value you put on the configuration) of the variant.
+
+For example:
+
+```
+etvas.init({
+  ...options,
+  productVariants: {
+    'key-1234': 'white',
+    'key-2345': 'green'
+  }
+})
+
+// when you have the productId (as result, for example, of an event)
+etvas.events.on('product.canceled', async data => {
+  const variant = etvas.client.getProductVariant(data.productId)
+  // the variant will have a value of white or green.
+})
+
+```
+
+Please note the `sync` character of `getProductVariant` function, which differs from the [one on context](#variants-in-context).
 
 #### Email messages
 

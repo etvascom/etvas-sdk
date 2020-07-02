@@ -45,3 +45,5 @@
   - Accept array of strings as well as a string for name when unregistering an event
   - Added utility function `alias`
   - Added tests for array syntax and `alias`
+- `v0.2.7`
+  - Added product variants with tests
