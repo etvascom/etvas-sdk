@@ -12,6 +12,13 @@ const _defaultOptions = {
   apiKey: '12345678'
 }
 
+const _additionalOptions = {
+  productVariants: {
+    'key-1234': 'first',
+    'key-2345': 'second'
+  }
+}
+
 const TEST_EVENT_NAME = 'event.test.name'
 const TEST_EVENT_ALIAS = 'event.test.alias'
 
@@ -341,6 +348,52 @@ describe('Events', () => {
       await handler(req, res)
       assert.strictEqual(res._data.status, 501)
       assert.strictEqual(res._data.json !== null, true)
+    })
+    it('should call event handler with variant if configured', async () => {
+      etvas.init({ ..._defaultOptions, ..._additionalOptions })
+      const expected = { purchaseId: '1234', productId: 'key-2345' }
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: TEST_EVENT_NAME, payload: expected }
+      )
+      proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
+        const { productId } = payload
+        assert.strictEqual(productId, 'key-2345')
+        assert.strictEqual(variant, 'second')
+      })
+      const res = new MockRes()
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 200)
+    })
+    it('should have undefined variant if no product id match', async () => {
+      etvas.init({ ..._defaultOptions, ..._additionalOptions })
+      const expected = { purchaseId: '1234', productId: 'key-2346' }
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: TEST_EVENT_NAME, payload: expected }
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
+        assert.strictEqual(payload.productId, 'key-2346')
+        assert.strictEqual(variant, undefined)
+      })
+      const handler = proxy()
+      await handler(req, res)
+    })
+    it('should have undefined variant if not configured', async () => {
+      const expected = { purchaseId: '1234', productId: 'key-1234' }
+      const req = new MockReq(
+        { 'x-api-key': '12345678' },
+        { name: TEST_EVENT_NAME, payload: expected }
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
+        assert.strictEqual(payload.productId, 'key-1234')
+        assert.strictEqual(variant, undefined)
+      })
+      const handler = proxy()
+      await handler(req, res)
     })
   })
 })

@@ -46,4 +46,7 @@
   - Added utility function `alias`
   - Added tests for array syntax and `alias`
 - `v0.2.7`
-  - Added product variants with tests
+  - Added product variants tests
+- `v0.3.0`
+  - Added product variants
+  - Added automatic variant value as second argument on events handler

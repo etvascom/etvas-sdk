@@ -281,8 +281,6 @@ Please note the use of variables inside your `message` and `subject`. They will 
 
 ## Events
 
-> Note: Work in progress
-
 You will receive some events and you need to process some of them.
 When the event is required to be processed, it means you need to
 return a `HTTP/1.1 200 OK` response when Etvas calls you.
@@ -290,6 +288,46 @@ return a `HTTP/1.1 200 OK` response when Etvas calls you.
 Here are the events emitted by Etvas Servers:
 
 - `product.purchased` - when the payment has been accepted and before the user can use the product.
+- `product.suspended` - when the subsequent subscription payment (i.e. next month debit) was declined by the customer's card, the product/service should not be usable anymore and the subscription suspended, but all the data should remain in place.
+- `product.resumed` [ **NOTE**: currently `product.repurchased` but a refactor is on the way] - When the customer took action and the payment went through, the subscription must be re-instantiated without any data loss.
+- `product.canceled` - the product was canceled by the user or the fixed-term subscription reached it's end. The subscription should be erased together with all the data. The user can re-purchase the product/service again (if available).
+- `user.deleted` - The user asked to delete all it's data. All active and past subscriptions and the entire user information should be deleted (or anonymized).
+
+> **NOTE**: When the customer deletes his account, we will cancel all active subscriptions linked to that customer. However, the order in which th events arrive is not guaranteed. For example, a `user.deleted` event can arrive before a `product.canceled` event regarding the same customer.
+
+All the events share the same payload:
+
+```
+HTTP/1.1 POST /etvas/events
+Content-Type: application/json
+{
+  "name": "event.name",
+  "payload": {
+    "productId": "1234-uuid",
+    "purchaseId": "2345-uuid"
+  }
+}
+```
+
+In addition, the `user.deleted` event will receive the deleted customer profile (one last time). By the time you receive the event, the customer profile is already deleted (or anonymized) so a call to `getProfile` or `/user/profile` will not yield the desired results anymore. Here is an example:
+
+```
+HTTP/1.1 POST /etvas/events
+Content-Type: application/json
+{
+  "name": "user.deleted",
+  "payload": {
+    "productId": "1234-uuid",
+    "purchaseId": "2345-uuid"
+  },
+  "profile": {
+    "firstName": "Customer first name",
+    "lastName": "Customer last name",
+    "email": "Customer email address",
+    "phoneNumber": "Customer phone number"
+  }
+}
+```
 
 #### If you are using `express`, we got your back:
 
@@ -308,6 +346,11 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const assert = require('assert')
 
+etvas.init({
+  apiURL: 'https://api.etvas.com",
+  apyKey: "12345678"
+})
+
 const router = express.Router()
 router.use('/event', etvas.events())
 
@@ -318,6 +361,37 @@ etvas.events.on('product.purchase', async data => {
 
   // return truthy value for a 200 OK response.
   // return falsy or throw an error to block the purchase flow.
+  return true
+})
+
+const app = express()
+app.use('/api', router)
+```
+
+#### A word on product variants
+
+If you configured product variants, you will automatically receive the variant name as second parameter in your handler:
+
+```
+const express = require('express')
+const bodyParser = require('body-parser')
+const assert = require('assert')
+
+etvas.init({
+  apiURL: 'https://api.etvas.com",
+  apyKey: "12345678",
+  productVariants: {
+    'key-1234': 'CHEAP_ONE',
+    'key-2345': 'AFFORDABLE_ONE'
+  }
+})
+
+const router = express.Router()
+router.use('/event', etvas.events())
+
+etvas.events.on('product.purchase', async (data, variant) => {
+  // assuming the user purchased the product with id "key-2345"
+  assert.strictEqual(data.purchaseId, 'AFFORDABLE_ONE')
   return true
 })
 
