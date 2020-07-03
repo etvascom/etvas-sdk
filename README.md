@@ -318,13 +318,13 @@ Content-Type: application/json
   "name": "user.deleted",
   "payload": {
     "productId": "1234-uuid",
-    "purchaseId": "2345-uuid"
-  },
-  "profile": {
-    "firstName": "Customer first name",
-    "lastName": "Customer last name",
-    "email": "Customer email address",
-    "phoneNumber": "Customer phone number"
+    "purchaseId": "2345-uuid",
+    "user": {
+      "firstName": "Customer first name",
+      "lastName": "Customer last name",
+      "email": "Customer email address",
+      "phoneNumber": "Customer phone number"
+    }
   }
 }
 ```
