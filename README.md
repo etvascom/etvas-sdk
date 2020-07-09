@@ -44,6 +44,7 @@ const etvas = require('@etvas/etvas-sdk')
 const config = {
   apiURL: 'https://api.etvas.com',
   apiKey: '1234-1234-1234-1234',
+  eventSecret: 'my-signature-secret',
   productVariants: {
     'key-1234': 'white',
     'key-2345': 'green'
@@ -305,7 +306,8 @@ Content-Type: application/json
   "payload": {
     "productId": "1234-uuid",
     "purchaseId": "2345-uuid"
-  }
+  },
+  timestamp: 123123123
 }
 ```
 
@@ -325,9 +327,58 @@ Content-Type: application/json
     "lastName": "Customer last name",
     "email": "Customer email address",
     "phoneNumber": "Customer phone number"
-  }
+  },
+  timestamp: 123123123
 }
 ```
+
+All events received by `POST` in your application are HMAC signed. The signature is present in the `x-etvas-signature` header of the request.
+
+#### Verify the signature
+
+You should **always** verify the signature against the request body.
+
+As you know, a typical request body is a JSON:
+
+```
+{
+  "name": "event.name",
+  "payload": {
+    "productId": "1234",
+    "purchaseId: "2345"
+  },
+  timestamp: 123123123
+}
+```
+
+For verifying a signature, you can use the following code:
+
+```
+const canonical = JSON.stringify(req.body)
+const computedSignature = etvas.hmac.sign(canonical)
+const receivedSignature = req.get('x-etvas-signature')
+assert.strictEqual(computedSignature, receivedSignature)
+```
+
+or, much simpler:
+
+```
+const canonical = JSON.stringify(req.body)
+const expected = req.get('x-etvas-signature')
+assert.strictEqual(etvas.hmac.verify(canonical, expected))
+```
+
+In addition, you should also verify the `timestamp` value to be valid: the difference between the transmitted timestamp and local one should not be more than 60 seconds:
+
+```
+const { timestamp } = req.body
+const now = Date.now()
+if (timestamp < 100000 || Math.abs(now - timestamp) < 60000) {
+  throw new Error('Something is wrong with the timeline!')
+}
+```
+
+> Note: Using etvas SDK for events will verify the signature automatically for you, and will report a 401 error of the signature does not verify. Also, if error occurs, your registered handler will not be called, so you don't have to worry about managing this kind of errors.
 
 #### If you are using `express`, we got your back:
 
@@ -348,7 +399,8 @@ const assert = require('assert')
 
 etvas.init({
   apiURL: 'https://api.etvas.com",
-  apyKey: "12345678"
+  apiKey: '12345678',
+  eventSecret: 'my-signature-secret'
 })
 
 const router = express.Router()
@@ -379,7 +431,8 @@ const assert = require('assert')
 
 etvas.init({
   apiURL: 'https://api.etvas.com",
-  apyKey: "12345678",
+  apiKey: '12345678',
+  eventSecret: 'my-signature-secret'
   productVariants: {
     'key-1234': 'CHEAP_ONE',
     'key-2345': 'AFFORDABLE_ONE'
