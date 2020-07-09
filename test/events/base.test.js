@@ -1,4 +1,5 @@
 const assert = require('assert').strict
+const crypto = require('crypto')
 const { describe, it, beforeEach, afterEach } = require('mocha')
 
 const etvas = require('../../lib/etvas')
@@ -9,7 +10,8 @@ const proxy = require('../../lib/events/proxy')
 
 const _defaultOptions = {
   apiURL: 'https://localhost:1234',
-  apiKey: '12345678'
+  apiKey: '12345678',
+  eventSecret: '12345678'
 }
 
 const _additionalOptions = {
@@ -18,6 +20,9 @@ const _additionalOptions = {
     'key-2345': 'second'
   }
 }
+
+const _sign = (value, key = _defaultOptions.eventSecret) =>
+  crypto.createHmac('sha256', key).update(value).digest('hex')
 
 const TEST_EVENT_NAME = 'event.test.name'
 const TEST_EVENT_ALIAS = 'event.test.alias'
@@ -219,13 +224,58 @@ describe('Events', () => {
         proxy.on(TEST_EVENT_ALIAS, async () => true)
       })
     })
+    it('should register an array of aliases', () => {
+      const handler = async () => true
+      proxy.on(TEST_EVENT_NAME, handler)
+      assert.doesNotThrow(() => {
+        proxy.alias(TEST_EVENT_NAME, [TEST_EVENT_ALIAS, 'another.event'])
+      })
+    })
+    it('should unregister an array of events', () => {
+      assert.doesNotThrow(() => {
+        proxy.off([TEST_EVENT_NAME, TEST_EVENT_ALIAS])
+      })
+    })
     it('should throw for aliasing and unregistered event', () => {
       assert.throws(() => {
         proxy.alias(TEST_EVENT_NAME, TEST_EVENT_ALIAS)
       })
     })
+    it('should call same handler with an array of registered events', async () => {
+      const body1 = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
+
+      const req1 = new MockReq(
+        { 'x-etvas-signature': _sign(JSON.stringify(body1)) },
+        body1
+      )
+      const res1 = new MockRes()
+
+      const body2 = {
+        name: TEST_EVENT_ALIAS,
+        payload: { purchaseId: '1234', productId: '3456' },
+        timestamp: Date.now()
+      }
+
+      const req2 = new MockReq(
+        { 'x-etvas-signature': _sign(JSON.stringify(body2)) },
+        body2
+      )
+      const res2 = new MockRes()
+
+      const handler = proxy()
+      proxy.on([TEST_EVENT_NAME, TEST_EVENT_ALIAS], () => ({ foo: 'bar' }))
+
+      await handler(req1, res1)
+      await handler(req2, res2)
+
+      assert.deepStrictEqual(res1, res2)
+    })
     it('should return 500 if no body', async () => {
-      const req = new MockReq({}, null)
+      const req = new MockReq({ 'x-etvas-signature': '12345678' }, null)
       const res = new MockRes()
       const handler = proxy()
       try {
@@ -235,7 +285,7 @@ describe('Events', () => {
     })
     it('should return 500 if no name in body', async () => {
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
+        { 'x-etvas-signature': '12345678' },
         { name: undefined, payload: { foo: 'bar' } }
       )
       const res = new MockRes()
@@ -245,33 +295,16 @@ describe('Events', () => {
       } catch (e) {}
       assert.strictEqual(res._data.status, 500)
     })
-    it('should return 500 if no x-api-key in header', async () => {
-      const req = new MockReq(
-        {},
-        { name: TEST_EVENT_NAME, payload: { foo: 'bar' } }
-      )
-      const res = new MockRes()
-      const handler = proxy()
-      await handler(req, res)
-      assert.strictEqual(res._data.status, 500)
-    })
-    it('should return 500 if x-api-key invalid', async () => {
-      const req = new MockReq(
-        { 'x-api-key': '1234567' },
-        { name: TEST_EVENT_NAME, payload: { foo: 'bar' } }
-      )
-      const res = new MockRes()
-      const handler = proxy()
-      await handler(req, res)
-      assert.strictEqual(res._data.status, 500)
-    })
     it('should return 501 if no handlers specified', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
+
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        {
-          name: TEST_EVENT_NAME,
-          payload: { purchaseId: '1234', productId: '2345' }
-        }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       const handler = proxy()
@@ -280,47 +313,131 @@ describe('Events', () => {
       assert.strictEqual(res._data.json !== null, true)
       assert.strictEqual(res._data.sent, true)
     })
-    it('should call handler for event and return 204 if true', async () => {
-      const expected = { purchaseId: '1234', productId: '2345' }
+    it('should return 400 if no signature in headers', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
+      const req = new MockReq({}, body)
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async () => true)
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 400)
+      assert.strictEqual(res._data.sent, true)
+      assert.strictEqual(res._data.json.error.length > 0, true)
+    })
+    it('should return 400 if expired timestamp in payload', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now() - 1200000
+      }
+
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        { name: TEST_EVENT_NAME, payload: expected }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async () => true)
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 400)
+      assert.strictEqual(res._data.json !== null, true)
+      assert.strictEqual(res._data.sent, true)
+    })
+    it('should return 400 if invalid timestamp in payload', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: 1
+      }
+
+      const req = new MockReq(
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async () => true)
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 400)
+      assert.strictEqual(res._data.json !== null, true)
+      assert.strictEqual(res._data.sent, true)
+    })
+    it('should return 403 if invalid signature', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
+
+      const req = new MockReq(
+        { 'x-etvas-signature': _sign('a' + JSON.stringify(body)) },
+        body
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async () => true)
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 403)
+      assert.strictEqual(res._data.json !== null, true)
+      assert.strictEqual(res._data.sent, true)
+    })
+    it('should call handler for event and return 204 if true', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
+      const req = new MockReq(
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       let customHandlerCalled = null
-      proxy.on(TEST_EVENT_NAME, async payload => {
-        customHandlerCalled = { ...payload }
+      proxy.on(TEST_EVENT_NAME, async received => {
+        customHandlerCalled = { ...received }
         return true
       })
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 204)
       assert.strictEqual(res._data.sent, true)
-      assert.deepStrictEqual(customHandlerCalled, expected)
+      assert.deepStrictEqual(customHandlerCalled, body.payload)
     })
-    it('should return response with 200 if response', async () => {
-      const expected = { purchaseId: '1234', productId: '2345' }
+    it('should return response with 200 if response is object', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        { name: TEST_EVENT_NAME, payload: expected }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       let customHandlerCalled = null
-      proxy.on(TEST_EVENT_NAME, async payload => {
-        customHandlerCalled = { ...payload }
+      proxy.on(TEST_EVENT_NAME, async received => {
+        customHandlerCalled = { ...received }
         return { foo: 'bar' }
       })
       const handler = proxy()
       await handler(req, res)
       assert.strictEqual(res._data.status, 200)
       assert.deepStrictEqual(res._data.json, { foo: 'bar' })
-      assert.deepStrictEqual(customHandlerCalled, expected)
+      assert.deepStrictEqual(customHandlerCalled, body.payload)
     })
     it('should return 500 if handler throws error', async () => {
-      const expected = { purchaseId: '1234', productId: '2345' }
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        { name: TEST_EVENT_NAME, payload: expected }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       proxy.on(TEST_EVENT_NAME, async () => {
@@ -332,12 +449,14 @@ describe('Events', () => {
       assert.deepStrictEqual(res._data.json, { error: 'something went wrong' })
     })
     it('should not call handler if uninstalled', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        {
-          name: TEST_EVENT_NAME,
-          payload: { productId: '1234', purchaseId: '2345' }
-        }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       proxy.on(TEST_EVENT_NAME, async () => {
@@ -349,12 +468,45 @@ describe('Events', () => {
       assert.strictEqual(res._data.status, 501)
       assert.strictEqual(res._data.json !== null, true)
     })
+    it('should correctly identify an axios error', async () => {
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: '2345' },
+        timestamp: Date.now()
+      }
+      const req = new MockReq(
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async () => {
+        const err = {
+          message: 'Not Found',
+          response: {
+            status: 404,
+            data: 'error data'
+          }
+        }
+        throw err
+      })
+      const handler = proxy()
+      await handler(req, res)
+      assert.strictEqual(res._data.status, 500)
+      assert.strictEqual(res._data.json.error, true)
+      assert.strictEqual(res._data.json.message, 'Not Found')
+      assert.strictEqual(res._data.json.proxyHttpStatus, 404)
+      assert.strictEqual(res._data.json.proxyHttpData, 'error data')
+    })
     it('should call event handler with variant if configured', async () => {
       etvas.init({ ..._defaultOptions, ..._additionalOptions })
-      const expected = { purchaseId: '1234', productId: 'key-2345' }
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: 'key-2345' },
+        timestamp: Date.now()
+      }
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        { name: TEST_EVENT_NAME, payload: expected }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
         const { productId } = payload
@@ -368,10 +520,14 @@ describe('Events', () => {
     })
     it('should have undefined variant if no product id match', async () => {
       etvas.init({ ..._defaultOptions, ..._additionalOptions })
-      const expected = { purchaseId: '1234', productId: 'key-2346' }
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: 'key-2346' },
+        timestamp: Date.now()
+      }
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        { name: TEST_EVENT_NAME, payload: expected }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
@@ -382,10 +538,14 @@ describe('Events', () => {
       await handler(req, res)
     })
     it('should have undefined variant if not configured', async () => {
-      const expected = { purchaseId: '1234', productId: 'key-1234' }
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: { purchaseId: '1234', productId: 'key-1234' },
+        timestamp: Date.now()
+      }
       const req = new MockReq(
-        { 'x-api-key': '12345678' },
-        { name: TEST_EVENT_NAME, payload: expected }
+        { 'x-etvas-signature': _sign(JSON.stringify(body)) },
+        body
       )
       const res = new MockRes()
       proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
