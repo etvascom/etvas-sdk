@@ -489,4 +489,18 @@ describe('Etvas SDK', () => {
       })
     })
   })
+  describe('Etvas HMAC', () => {
+    it('should exist', () => {
+      assert.equal(etvas.hmac !== undefined, true)
+    })
+    it('should be an object', () => {
+      assert.equal(typeof etvas.hmac, 'object')
+    })
+    it('should have a sign function', () => {
+      assert.equal(typeof etvas.hmac.sign, 'function')
+    })
+    it('should have a verify function', () => {
+      assert.equal(typeof etvas.hmac.verify, 'function')
+    })
+  })
 })
