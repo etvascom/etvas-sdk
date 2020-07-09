@@ -502,19 +502,8 @@ describe('Etvas SDK', () => {
     it('should be an object', () => {
       assert.equal(typeof etvas.hmac, 'object')
     })
-    it('should have a sign function', () => {
-      assert.equal(typeof etvas.hmac.sign, 'function')
-    })
     it('should have a verify function', () => {
       assert.equal(typeof etvas.hmac.verify, 'function')
-    })
-    it('sign should use the eventSecret from init', () => {
-      etvas.init({ ..._defaultOptions })
-      const canonical = 'I hereby accept'
-      const signature = etvas.hmac.sign(canonical)
-      const expected =
-        '315dd557354e2a99ba2050d52165fb0a3085cc77535085d398a255613a8b480b'
-      assert.strictEqual(signature, expected)
     })
     it('verify should use the eventSecret from init', () => {
       etvas.init({ ..._defaultOptions })
@@ -522,12 +511,6 @@ describe('Etvas SDK', () => {
       const signature =
         '315dd557354e2a99ba2050d52165fb0a3085cc77535085d398a255613a8b480b'
       assert.strictEqual(etvas.hmac.verify(canonical, signature), true)
-    })
-    it('sign should fail without an init', () => {
-      assert.throws(() => {
-        const canonical = 'I hereby accept'
-        etvas.hmac.sign(canonical)
-      })
     })
     it('verify should fail without an init', () => {
       assert.throws(() => {

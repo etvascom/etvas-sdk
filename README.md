@@ -354,15 +354,6 @@ For verifying a signature, you can use the following code:
 
 ```
 const canonical = JSON.stringify(req.body)
-const computedSignature = etvas.hmac.sign(canonical)
-const receivedSignature = req.get('x-etvas-signature')
-assert.strictEqual(computedSignature, receivedSignature)
-```
-
-or, much simpler:
-
-```
-const canonical = JSON.stringify(req.body)
 const expected = req.get('x-etvas-signature')
 assert.strictEqual(etvas.hmac.verify(canonical, expected))
 ```
@@ -372,7 +363,8 @@ In addition, you should also verify the `timestamp` value to be valid: the diffe
 ```
 const { timestamp } = req.body
 const now = Date.now()
-if (timestamp < 100000 || Math.abs(now - timestamp) < 60000) {
+const oneMinute = 60000
+if (isNaN(timestamp) || typeof timestamp !== 'number' || timestamp <= 0 || Math.abs(now - timestamp) < oneMinute) {
   throw new Error('Something is wrong with the timeline!')
 }
 ```
