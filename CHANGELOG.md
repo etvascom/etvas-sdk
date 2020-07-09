@@ -53,4 +53,4 @@
 - `v1.0.0`
   - First production release
   - Add automatic HMAC verification for signed events
-  - Expose verifySignature on main etvas object
+  - Expose hmac.sign and hmac.verify on main etvas object
