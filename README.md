@@ -407,6 +407,7 @@ const router = express.Router()
 router.use('/event', etvas.events())
 
 etvas.events.on('product.purchase', async data => {
+  // the signature and timestamps are already verified.
   // manage data
   assert.strictEqual(typeof data.purchaseId, 'string')
   assert.strictEqual(typeof data.productId, 'string)
