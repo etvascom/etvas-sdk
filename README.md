@@ -97,8 +97,7 @@ You may want to write some information of your own regarding
 this purchase. This information can include your own purchaseId,
 details about subscription or maybe just the purchase date.
 
-> Note: the maximum length of the data you can write is 100k
-> (after JSON stringify)
+> Note: the maximum length of the data you can write is 100k (after JSON stringify)
 
 ```
 const data = { subscription: '1234', purchaseDate: (new Date()).valueOf() }
