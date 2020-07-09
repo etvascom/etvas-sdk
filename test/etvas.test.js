@@ -10,7 +10,8 @@ const REQUEST_URL = '/external-data'
 
 const _defaultOptions = {
   apiURL: 'https://localhost:1234',
-  apiKey: '12345678'
+  apiKey: '12345678',
+  eventSecret: '12345678'
 }
 
 const _additionalOptions = {
@@ -28,6 +29,12 @@ const _wait = timeout =>
   })
 
 describe('Etvas SDK', () => {
+  beforeEach(() => {
+    config.clear()
+  })
+  afterEach(() => {
+    config.clear()
+  })
   it('should exist', () => {
     assert.equal(typeof etvas, 'object')
   })
@@ -485,6 +492,32 @@ describe('Etvas SDK', () => {
         } catch (err) {
           assert.equal(err instanceof Error, true)
         }
+      })
+    })
+  })
+  describe('Etvas HMAC', () => {
+    it('should exist', () => {
+      assert.equal(etvas.hmac !== undefined, true)
+    })
+    it('should be an object', () => {
+      assert.equal(typeof etvas.hmac, 'object')
+    })
+    it('should have a verify function', () => {
+      assert.equal(typeof etvas.hmac.verify, 'function')
+    })
+    it('verify should use the eventSecret from init', () => {
+      etvas.init({ ..._defaultOptions })
+      const canonical = 'I hereby accept'
+      const signature =
+        '315dd557354e2a99ba2050d52165fb0a3085cc77535085d398a255613a8b480b'
+      assert.strictEqual(etvas.hmac.verify(canonical, signature), true)
+    })
+    it('verify should fail without an init', () => {
+      assert.throws(() => {
+        const canonical = 'I hereby accept'
+        const signature =
+          '315dd557354e2a99ba2050d52165fb0a3085cc77535085d398a255613a8b480b'
+        etvas.hmac.verify(canonical, signature)
       })
     })
   })

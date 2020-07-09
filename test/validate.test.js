@@ -375,4 +375,36 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('eventSecret - key used by hmac to verify event signature', () => {
+    it('should pass for valid string', () => {
+      assert.doesNotThrow(() => {
+        validate({ eventSecret: 'a key' }, 'TEST')
+      })
+    })
+    it('should fail for null', () => {
+      assert.throws(() => {
+        validate({ eventSecret: null }, 'TEST')
+      })
+    })
+    it('should fail for undefined', () => {
+      assert.throws(() => {
+        validate({ eventSecret: undefined }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ eventSecret: true }, 'TEST')
+      })
+    })
+    it('should fail for boolean false', () => {
+      assert.throws(() => {
+        validate({ eventSecret: false }, 'TEST')
+      })
+    })
+    it('should fail for object', () => {
+      assert.throws(() => {
+        validate({ eventSecret: { foo: 'bar' } }, 'TEST')
+      })
+    })
+  })
 })
