@@ -50,3 +50,7 @@
 - `v0.3.0`
   - Added product variants
   - Added automatic variant value as second argument on events handler
+- `v1.0.0`
+  - First production release
+  - Add automatic HMAC verification for signed events
+  - Expose verifySignature on main etvas object
