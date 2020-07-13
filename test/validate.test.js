@@ -407,4 +407,245 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('Raw Email To recipients', () => {
+    it('should pass for an array of emails', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailTo: ['foo@bar.com', 'example@test.com'] }, 'TEST')
+      })
+    })
+    it('should pass for an array of objects', () => {
+      assert.doesNotThrow(() => {
+        const to = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: 'appleseed@example.com' }
+        ]
+        validate({ rawEmailTo: to }, 'TEST')
+      })
+    })
+    it('should fail for empty email in array', () => {
+      assert.throws(() => {
+        validate({ rawEmailTo: ['foo@bar.com', ''] }, 'TEST')
+      })
+    })
+    it('should fail for an array of objects with invalid email', () => {
+      assert.throws(() => {
+        const to = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: '@example.com' }
+        ]
+        validate({ rawEmailTo: to }, 'TEST')
+      })
+    })
+    it('should fail for an array of objects with empty email', () => {
+      assert.throws(() => {
+        const to = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: '' }
+        ]
+        validate({ rawEmailTo: to }, 'TEST')
+      })
+    })
+    it('should fail for null value', () => {
+      assert.throws(() => {
+        validate({ rawEmailTo: null }, 'TEST')
+      })
+    })
+    it('should fail for undefined value', () => {
+      assert.throws(() => {
+        validate({ rawEmailTo: undefined }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ rawEmailTo: true }, 'TEST')
+      })
+    })
+    it('should fail for empty array', () => {
+      assert.throws(() => {
+        validate({ rawEmailTo: [] }, 'TEST')
+      })
+    })
+  })
+  describe('Raw Email CC recipients', () => {
+    it('should pass for an array of emails', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailCc: ['foo@bar.com', 'example@test.com'] }, 'TEST')
+      })
+    })
+    it('should pass for an array of objects', () => {
+      assert.doesNotThrow(() => {
+        const to = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: 'appleseed@example.com' }
+        ]
+        validate({ rawEmailCc: to }, 'TEST')
+      })
+    })
+    it('should fail for invalid email in array', () => {
+      assert.throws(() => {
+        validate({ rawEmailCc: ['foo@bar.com', '@test.com'] }, 'TEST')
+      })
+    })
+    it('should fail for empty email in array', () => {
+      assert.throws(() => {
+        validate({ rawEmailCc: ['foo@bar.com', ''] }, 'TEST')
+      })
+    })
+    it('should fail for an array of objects with invalid email', () => {
+      assert.throws(() => {
+        const cc = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: '@example.com' }
+        ]
+        validate({ rawEmailCc: cc }, 'TEST')
+      })
+    })
+    it('should fail for an array of objects with empty email', () => {
+      assert.throws(() => {
+        const cc = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: '' }
+        ]
+        validate({ rawEmailCc: cc }, 'TEST')
+      })
+    })
+    it('should pass for null value', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailCc: null }, 'TEST')
+      })
+    })
+    it('should pass for undefined value', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailCc: undefined }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ rawEmailCc: true }, 'TEST')
+      })
+    })
+    it('should pass for empty array', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailCc: [] }, 'TEST')
+      })
+    })
+  })
+  describe('Raw Email BCC recipients', () => {
+    it('should pass for an array of emails', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailBcc: ['foo@bar.com', 'example@test.com'] }, 'TEST')
+      })
+    })
+    it('should pass for an array of objects', () => {
+      assert.doesNotThrow(() => {
+        const to = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: 'appleseed@example.com' }
+        ]
+        validate({ rawEmailBcc: to }, 'TEST')
+      })
+    })
+    it('should fail for invalid email', () => {
+      assert.throws(() => {
+        validate({ rawEmailBcc: ['foo@bar.com', '@test.com'] }, 'TEST')
+      })
+    })
+    it('should fail for empty email', () => {
+      assert.throws(() => {
+        validate({ rawEmailBcc: ['foo@bar.com', ''] }, 'TEST')
+      })
+    })
+    it('should fail for an array of objects with invalid email', () => {
+      assert.throws(() => {
+        const bcc = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: '@example.com' }
+        ]
+        validate({ rawEmailBcc: bcc }, 'TEST')
+      })
+    })
+    it('should fail for an array of objects with empty email', () => {
+      assert.throws(() => {
+        const bcc = [
+          { name: 'Jon', email: 'jon@example.com' },
+          { name: 'Appleseed', email: '' }
+        ]
+        validate({ rawEmailBcc: bcc }, 'TEST')
+      })
+    })
+    it('should pass for null value', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailBcc: null }, 'TEST')
+      })
+    })
+    it('should pass for undefined value', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailBcc: undefined }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ rawEmailBcc: true }, 'TEST')
+      })
+    })
+    it('should pass for empty array', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailBcc: [] }, 'TEST')
+      })
+    })
+  })
+  describe('Raw Email Subject', () => {
+    it('should pass for a non-empty string', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailSubject: 'Hello' }, 'TEST')
+      })
+    })
+    it('should fail for empty string', () => {
+      assert.throws(() => {
+        validate({ rawEmailSubject: '' }, 'TEST')
+      })
+    })
+    it('should fail for an array', () => {
+      assert.throws(() => {
+        validate({ rawEmailSubject: ['foo'] }, 'TEST')
+      })
+    })
+    it('should fail for an object', () => {
+      assert.throws(() => {
+        validate({ rawEmailSubject: { foo: 'bar' } }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ rawEmailSubject: true }, 'TEST')
+      })
+    })
+  })
+  describe('Raw Email Text', () => {
+    it('should pass for a non-empty string', () => {
+      assert.doesNotThrow(() => {
+        validate({ rawEmailText: 'Hello' }, 'TEST')
+      })
+    })
+    it('should fail for empty string', () => {
+      assert.throws(() => {
+        validate({ rawEmailText: '' }, 'TEST')
+      })
+    })
+    it('should fail for an array', () => {
+      assert.throws(() => {
+        validate({ rawEmailText: ['foo'] }, 'TEST')
+      })
+    })
+    it('should fail for an object', () => {
+      assert.throws(() => {
+        validate({ rawEmailText: { foo: 'bar' } }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ rawEmailText: true }, 'TEST')
+      })
+    })
+  })
 })

@@ -54,3 +54,5 @@
   - First production release
   - Add automatic HMAC verification for signed events
   - Expose hmac.sign and hmac.verify on main etvas object
+- `v1.1.0`
+  - Add internal use `_sendRawEmail`
