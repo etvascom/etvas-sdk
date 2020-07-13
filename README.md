@@ -31,7 +31,8 @@ const etvas = require('@etvas/etvas-sdk')
 
 const config = {
   apiURL: 'https://api.etvas.com',
-  apiKey: '1234-1234-1234-1234'
+  apiKey: '1234-1234-1234-1234',
+  eventSecret: 'my-signature-secret',
 }
 etvas.init(config)
 ```
