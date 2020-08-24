@@ -521,4 +521,9 @@ describe('Etvas SDK', () => {
       })
     })
   })
+  describe('Etvas Internal Mail', () => {
+    it('should be a function', () => {
+      assert.equal(typeof etvas.client._sendRawEmail, 'function')
+    })
+  })
 })
