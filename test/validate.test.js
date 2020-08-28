@@ -648,4 +648,41 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('Request signature secret', () => {
+    it('should pass for non-empty string', () => {
+      assert.doesNotThrow(() => {
+        validate({ reqSignatureSecret: 'Hello' }, 'TEST')
+      })
+    })
+    it('should pass for undefined', () => {
+      assert.doesNotThrow(() => {
+        validate({ reqSignatureSecret: undefined }, 'TEST')
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ reqSignatureSecret: true }, 'TEST')
+      })
+    })
+    it('should fail for boolean false', () => {
+      assert.throws(() => {
+        validate({ reqSignatureSecret: false }, 'TEST')
+      })
+    })
+    it('should fail for object', () => {
+      assert.throws(() => {
+        validate({ reqSignatureSecret: { foo: 'bar' } }, 'TEST')
+      })
+    })
+    it('should fail for an array', () => {
+      assert.throws(() => {
+        validate({ reqSignatureSecret: ['a', 'b'] }, 'TEST')
+      })
+    })
+    it('should fail for empty array', () => {
+      assert.throws(() => {
+        validate({ reqSignatureSecret: [] }, 'TEST')
+      })
+    })
+  })
 })
