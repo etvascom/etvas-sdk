@@ -56,6 +56,20 @@ etvas.init(config)
 
 (see more on variants [in context](#variants-in-context) or [outside context](#variants-outside-context)
 
+If you want to communicate with Etvas API (and you should :), you need to sign your requests. The signing secret is provided by Etvas and you should use it in the `init` function as follows:
+
+```
+const etvas = require('@etvas/etvas-sdk')
+
+const config = {
+  apiURL: 'https://api.etvas.com',
+  apiKey: '1234-1234-1234-1234',
+  eventSecret: 'my-signature-secret',
+  reqSignatureSecret: 'super-secret-key'
+}
+etvas.init(config)
+```
+
 See what version you are currently using with:
 
 ```
