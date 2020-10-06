@@ -150,13 +150,6 @@ describe('Etvas SDK', () => {
         status: 200,
         response: { contextId: '1234', productId: 'key-1234' }
       })
-      // moxios.wait(() => {
-      //   const request = moxios.requests.mostRecent()
-      //   request.respondWith({
-      //     status: 200,
-      //     response: { contextId: '1234', productId: 'key-1234' }
-      //   })
-      // })
       etvas.init({
         ..._defaultOptions,
         ..._additionalOptions

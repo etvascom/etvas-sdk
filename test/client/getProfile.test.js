@@ -56,4 +56,13 @@ describe('Client.getProfile', () => {
     const response = await getProfile(xhr, 'my context')
     assert.equal(response.contextId, 'my context')
   })
+  it('should append query string if provided', done => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      assert.equal(request.config.url, `${REQUEST_URL}?include=address`)
+      request.respondWith({ status: 200 })
+      done()
+    })
+    getProfile(xhr, 'my context', { include: 'address' })
+  })
 })
