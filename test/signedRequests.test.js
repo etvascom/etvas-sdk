@@ -20,11 +20,11 @@ describe('Signed requests', () => {
   it('should append valid timestamp in header', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(!!request.config.headers['x-timestamp'], true)
+      assert.strictEqual(!!request.config.headers['x-timestamp'], true)
       const headerTimestamp = request.config.headers['x-timestamp']
-      assert.equal(isNaN(headerTimestamp), false)
+      assert.strictEqual(isNaN(headerTimestamp), false)
       const now = Math.floor(Date.now() / 1000)
-      assert.equal(now - parseInt(headerTimestamp) < 1000, true)
+      assert.strictEqual(now - parseInt(headerTimestamp) < 1000, true)
       request.respondWith({ status: 200 })
       done()
     })
@@ -33,9 +33,9 @@ describe('Signed requests', () => {
   it('should append a signature header', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(!!request.config.headers['x-signature'], true)
+      assert.strictEqual(!!request.config.headers['x-signature'], true)
       const headerSignature = request.config.headers['x-signature']
-      assert.equal(typeof headerSignature, 'string')
+      assert.strictEqual(typeof headerSignature, 'string')
       request.respondWith({ status: 200 })
       done()
     })

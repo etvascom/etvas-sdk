@@ -125,7 +125,7 @@ will always get the same date you saved.
 
 ```
 const data = etvas.client(token).write(data)
-assert.equals(data.subscription, '1234')
+assert.strictEqual(data.subscription, '1234')
 ```
 
 > Note: this information is attached to the purchase, not the customer.
@@ -198,7 +198,7 @@ you saved the data):
 
 ```
 const data = await etvas.client.read('my-key')
-assert.equals(data.userId, '1234')
+assert.strictEqual(data.userId, '1234')
 ```
 
 If you decide to erase the stored information, you can use:

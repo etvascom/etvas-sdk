@@ -36,10 +36,10 @@ describe('Etvas SDK', () => {
     config.clear()
   })
   it('should exist', () => {
-    assert.equal(typeof etvas, 'object')
+    assert.strictEqual(typeof etvas, 'object')
   })
   it('should have an init method', () => {
-    assert.equal(typeof etvas.init, 'function')
+    assert.strictEqual(typeof etvas.init, 'function')
   })
   describe('Init', () => {
     it('should not throw if correct options are set', () => {
@@ -55,12 +55,12 @@ describe('Etvas SDK', () => {
     it('should preserve config once init is called', async () => {
       etvas.init({ ..._defaultOptions })
       await _wait(10)
-      assert.equal(config.get('apiURL'), _defaultOptions.apiURL)
+      assert.strictEqual(config.get('apiURL'), _defaultOptions.apiURL)
     })
     it('should preserve additional options once init is called', async () => {
       etvas.init({ ..._defaultOptions, ..._additionalOptions })
       await _wait(10)
-      assert.equal(config.get('apiURL'), _defaultOptions.apiURL)
+      assert.strictEqual(config.get('apiURL'), _defaultOptions.apiURL)
       assert.deepStrictEqual(
         config.get('productVariants'),
         _additionalOptions.productVariants
@@ -108,28 +108,31 @@ describe('Etvas SDK', () => {
       config.clear()
     })
     it('should exist as a function', () => {
-      assert.equal(typeof etvas.client, 'function')
+      assert.strictEqual(typeof etvas.client, 'function')
     })
     it('should have a read function', () => {
-      assert.equal(typeof etvas.client.read, 'function')
+      assert.strictEqual(typeof etvas.client.read, 'function')
     })
     it('should have a write function', () => {
-      assert.equal(typeof etvas.client.write, 'function')
+      assert.strictEqual(typeof etvas.client.write, 'function')
     })
     it('should have a clear function', () => {
-      assert.equal(typeof etvas.client.clear, 'function')
+      assert.strictEqual(typeof etvas.client.clear, 'function')
     })
     it('should have a read function in context', () => {
-      assert.equal(typeof etvas.client('token').read, 'function')
+      assert.strictEqual(typeof etvas.client('token').read, 'function')
     })
     it('should have a write function in context', () => {
-      assert.equal(typeof etvas.client('token').write, 'function')
+      assert.strictEqual(typeof etvas.client('token').write, 'function')
     })
     it('should have a clear function in context', () => {
-      assert.equal(typeof etvas.client('token').clear, 'function')
+      assert.strictEqual(typeof etvas.client('token').clear, 'function')
     })
     it('should have a getProductVariant function in context', () => {
-      assert.equal(typeof etvas.client('token').getProductVariant, 'function')
+      assert.strictEqual(
+        typeof etvas.client('token').getProductVariant,
+        'function'
+      )
     })
     it('should throw on getProductVariants if no configuration given', async () => {
       moxios.wait(() => {
@@ -150,13 +153,6 @@ describe('Etvas SDK', () => {
         status: 200,
         response: { contextId: '1234', productId: 'key-1234' }
       })
-      // moxios.wait(() => {
-      //   const request = moxios.requests.mostRecent()
-      //   request.respondWith({
-      //     status: 200,
-      //     response: { contextId: '1234', productId: 'key-1234' }
-      //   })
-      // })
       etvas.init({
         ..._defaultOptions,
         ..._additionalOptions
@@ -168,12 +164,12 @@ describe('Etvas SDK', () => {
       it('read should call correct url', done => {
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, `${REQUEST_URL}/a-key`)
-          assert.equal(
+          assert.strictEqual(request.config.url, `${REQUEST_URL}/a-key`)
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'get')
+          assert.strictEqual(request.config.method, 'get')
           request.respondWith({ status: 200 })
           done()
         })
@@ -182,12 +178,12 @@ describe('Etvas SDK', () => {
       it('write should call correct url', done => {
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, `${REQUEST_URL}/two-keys`)
-          assert.equal(
+          assert.strictEqual(request.config.url, `${REQUEST_URL}/two-keys`)
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'put')
+          assert.strictEqual(request.config.method, 'put')
           request.respondWith({ status: 200 })
           done()
         })
@@ -196,12 +192,12 @@ describe('Etvas SDK', () => {
       it('write should delete with null value', done => {
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, `${REQUEST_URL}/two-keys`)
-          assert.equal(
+          assert.strictEqual(request.config.url, `${REQUEST_URL}/two-keys`)
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'delete')
+          assert.strictEqual(request.config.method, 'delete')
           request.respondWith({ status: 200 })
           done()
         })
@@ -210,12 +206,12 @@ describe('Etvas SDK', () => {
       it('clear should delete with null value', done => {
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, `${REQUEST_URL}/clear-key`)
-          assert.equal(
+          assert.strictEqual(request.config.url, `${REQUEST_URL}/clear-key`)
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'delete')
+          assert.strictEqual(request.config.method, 'delete')
           request.respondWith({ status: 200 })
           done()
         })
@@ -241,12 +237,12 @@ describe('Etvas SDK', () => {
 
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, '/verify-token')
-          assert.equal(
+          assert.strictEqual(request.config.url, '/verify-token')
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'post')
+          assert.strictEqual(request.config.method, 'post')
           request.respondWith({
             status: 200,
             response: { contextId: 'context-id-1234' }
@@ -262,7 +258,7 @@ describe('Etvas SDK', () => {
         try {
           await etvas.client('token').read('two-key')
         } catch (err) {
-          assert.equal(err instanceof Error, true)
+          assert.strictEqual(err instanceof Error, true)
         }
       })
       it('write should call verify token first', done => {
@@ -272,12 +268,12 @@ describe('Etvas SDK', () => {
 
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, '/verify-token')
-          assert.equal(
+          assert.strictEqual(request.config.url, '/verify-token')
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'post')
+          assert.strictEqual(request.config.method, 'post')
           request.respondWith({
             status: 200,
             response: { contextId: 'context-id-12345' }
@@ -293,12 +289,12 @@ describe('Etvas SDK', () => {
 
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
-          assert.equal(request.config.url, '/verify-token')
-          assert.equal(
+          assert.strictEqual(request.config.url, '/verify-token')
+          assert.strictEqual(
             request.config.headers['x-api-key'],
             _defaultOptions.apiKey
           )
-          assert.equal(request.config.method, 'post')
+          assert.strictEqual(request.config.method, 'post')
           request.respondWith({
             status: 200,
             response: { contextId: 'context-id-12345' }
@@ -315,7 +311,7 @@ describe('Etvas SDK', () => {
         try {
           await etvas.client('token').write('key-id', 'value')
         } catch (err) {
-          assert.equal(err instanceof Error, true)
+          assert.strictEqual(err instanceof Error, true)
         }
       })
       it('clear should fail if no context', async () => {
@@ -326,7 +322,7 @@ describe('Etvas SDK', () => {
         try {
           await etvas.client('token').clear('key-id')
         } catch (err) {
-          assert.equal(err instanceof Error, true)
+          assert.strictEqual(err instanceof Error, true)
         }
       })
       it('customerProfile should fail if no context', async () => {
@@ -337,7 +333,7 @@ describe('Etvas SDK', () => {
         try {
           await etvas.client('token').getCustomerProfile()
         } catch (err) {
-          assert.equal(err instanceof Error, true)
+          assert.strictEqual(err instanceof Error, true)
         }
       })
       it('customerProfile should not use cached value if different token', async () => {
@@ -490,20 +486,20 @@ describe('Etvas SDK', () => {
             message: 'test message'
           })
         } catch (err) {
-          assert.equal(err instanceof Error, true)
+          assert.strictEqual(err instanceof Error, true)
         }
       })
     })
   })
   describe('Etvas HMAC', () => {
     it('should exist', () => {
-      assert.equal(etvas.hmac !== undefined, true)
+      assert.strictEqual(etvas.hmac !== undefined, true)
     })
     it('should be an object', () => {
-      assert.equal(typeof etvas.hmac, 'object')
+      assert.strictEqual(typeof etvas.hmac, 'object')
     })
     it('should have a verify function', () => {
-      assert.equal(typeof etvas.hmac.verify, 'function')
+      assert.strictEqual(typeof etvas.hmac.verify, 'function')
     })
     it('verify should use the eventSecret from init', () => {
       etvas.init({ ..._defaultOptions })
@@ -523,7 +519,7 @@ describe('Etvas SDK', () => {
   })
   describe('Etvas Internal Mail', () => {
     it('should be a function', () => {
-      assert.equal(typeof etvas.client._sendRawEmail, 'function')
+      assert.strictEqual(typeof etvas.client._sendRawEmail, 'function')
     })
   })
 })

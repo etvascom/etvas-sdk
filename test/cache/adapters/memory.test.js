@@ -18,27 +18,27 @@ describe('MemoryCacheAdapter', () => {
     adapter.clear({ all: true })
   })
   it('should exist', () => {
-    assert.equal(!!adapter, true)
+    assert.strictEqual(!!adapter, true)
   })
   it('should have method has', () => {
-    assert.equal(typeof adapter.has, 'function')
+    assert.strictEqual(typeof adapter.has, 'function')
   })
   it('should have method read', () => {
-    assert.equal(typeof adapter.read, 'function')
+    assert.strictEqual(typeof adapter.read, 'function')
   })
   it('should have method write', () => {
-    assert.equal(typeof adapter.write, 'function')
+    assert.strictEqual(typeof adapter.write, 'function')
   })
   it('should have method clear', () => {
-    assert.equal(typeof adapter.clear, 'function')
+    assert.strictEqual(typeof adapter.clear, 'function')
   })
   it('should return null for a value not stored', () => {
     const value = adapter.read('non-existent-key')
-    assert.equal(value, null)
+    assert.strictEqual(value, null)
   })
   it('should return specified default value for a value not stored', () => {
     const value = adapter.read('non-existent-key', 'default-value')
-    assert.equal(value, 'default-value')
+    assert.strictEqual(value, 'default-value')
   })
   it('should successfully store a key', () => {
     assert.doesNotThrow(() => {
@@ -54,16 +54,16 @@ describe('MemoryCacheAdapter', () => {
     const storedValue = `value-${Math.floor(10000 * Math.random())}`
     adapter.write('key', storedValue)
     const retrieved = adapter.read('key')
-    assert.equal(retrieved, storedValue)
+    assert.strictEqual(retrieved, storedValue)
   })
   it('should clear a previously stored value', () => {
     const storedValue = `value-${Math.floor(10000 * Math.random())}`
     adapter.write('key', storedValue)
     const retrieved = adapter.read('key')
-    assert.equal(retrieved, storedValue)
+    assert.strictEqual(retrieved, storedValue)
     adapter.clear('key')
     const actual = adapter.read('key')
-    assert.equal(actual, null)
+    assert.strictEqual(actual, null)
   })
   it('should throw an error if no key specified calling clear', () => {
     assert.throws(() => {
@@ -84,24 +84,24 @@ describe('MemoryCacheAdapter', () => {
     }
     adapter.write('complex-key', storedValue)
     const retrieved = adapter.read('complex-key')
-    assert.equal(retrieved.foo, storedValue.foo)
-    assert.equal(retrieved.fun(), storedValue.fun())
+    assert.strictEqual(retrieved.foo, storedValue.foo)
+    assert.strictEqual(retrieved.fun(), storedValue.fun())
   })
   it('should update value on each call', () => {
     const key = 'overwrite-key'
     adapter.write(key, 'first-value')
-    assert.equal(adapter.read(key), 'first-value')
+    assert.strictEqual(adapter.read(key), 'first-value')
     adapter.write(key, 'second-value')
-    assert.equal(adapter.read(key), 'second-value')
+    assert.strictEqual(adapter.read(key), 'second-value')
   })
 
   it('should expire after specified time', async () => {
     const _now = new Date().valueOf()
     adapter.write('foo', 'bar', _now + 50)
     const immediate = adapter.read('foo')
-    assert.equal(immediate, 'bar')
+    assert.strictEqual(immediate, 'bar')
     await _wait(51)
     const retrieved = adapter.read('foo')
-    assert.equal(retrieved, null)
+    assert.strictEqual(retrieved, null)
   })
 })

@@ -19,19 +19,19 @@ describe('Cache', () => {
       cache.clear({ all: true })
     })
     it('should exist', () => {
-      assert.equal(!!cache, true)
+      assert.strictEqual(!!cache, true)
     })
     it('should have method has', () => {
-      assert.equal(typeof cache.has, 'function')
+      assert.strictEqual(typeof cache.has, 'function')
     })
     it('should have method read', () => {
-      assert.equal(typeof cache.read, 'function')
+      assert.strictEqual(typeof cache.read, 'function')
     })
     it('should have method write', () => {
-      assert.equal(typeof cache.write, 'function')
+      assert.strictEqual(typeof cache.write, 'function')
     })
     it('should have method clear', () => {
-      assert.equal(typeof cache.clear, 'function')
+      assert.strictEqual(typeof cache.clear, 'function')
     })
 
     it('should async write a value', async () => {
@@ -45,7 +45,7 @@ describe('Cache', () => {
         return 'async-generated-value'
       }
       const retrieved = await cache.read('async key', _generate)
-      assert.equal(retrieved, 'async-generated-value')
+      assert.strictEqual(retrieved, 'async-generated-value')
     })
     it('should not call generator function if value already cached', async () => {
       let generatorCalled = 0
@@ -56,12 +56,12 @@ describe('Cache', () => {
         return `async-generated-value-${generatorCalled}`
       }
       const retrieved = await cache.read(key, _generate)
-      assert.equal(retrieved, 'async-generated-value-1')
-      assert.equal(generatorCalled, 1)
+      assert.strictEqual(retrieved, 'async-generated-value-1')
+      assert.strictEqual(generatorCalled, 1)
       for (let i = 0; i < 5; i++) {
         const cached = await cache.read(key, _generate)
-        assert.equal(cached, 'async-generated-value-1')
-        assert.equal(generatorCalled, 1)
+        assert.strictEqual(cached, 'async-generated-value-1')
+        assert.strictEqual(generatorCalled, 1)
       }
     })
     it('should call generator function if value expired', async () => {
@@ -75,23 +75,23 @@ describe('Cache', () => {
       const retrieved = await cache.read(key, _generate, {
         expiresInterval: 10
       })
-      assert.equal(retrieved, 'async-generated-value-1')
-      assert.equal(generatorCalled, 1)
+      assert.strictEqual(retrieved, 'async-generated-value-1')
+      assert.strictEqual(generatorCalled, 1)
       await _wait(50)
       const retrieved2 = await cache.read(key, _generate)
-      assert.equal(retrieved2, 'async-generated-value-2')
+      assert.strictEqual(retrieved2, 'async-generated-value-2')
       const retrieved3 = await cache.read(key, _generate)
-      assert.equal(retrieved3, 'async-generated-value-2')
+      assert.strictEqual(retrieved3, 'async-generated-value-2')
     })
     it('should set never expire if expireInterval is zero', async () => {
       const val = 'never expire'
       const initial = await cache.read('non-expiring', () => val, {
         expiresInterval: 0
       })
-      assert.equal(initial, val)
+      assert.strictEqual(initial, val)
       await _wait(50)
       const after = await cache.read('non-expiring', () => 'another value')
-      assert.equal(after, val)
+      assert.strictEqual(after, val)
     })
   })
 
@@ -103,25 +103,25 @@ describe('Cache', () => {
       cache.clear({ all: true })
     })
     it('should have read function', () => {
-      assert.equal(typeof cache.sync.read, 'function')
+      assert.strictEqual(typeof cache.sync.read, 'function')
     })
     it('should have write function', () => {
-      assert.equal(typeof cache.sync.write, 'function')
+      assert.strictEqual(typeof cache.sync.write, 'function')
     })
     it('should have clear function', () => {
-      assert.equal(typeof cache.sync.clear, 'function')
+      assert.strictEqual(typeof cache.sync.clear, 'function')
     })
     it('should have has function', () => {
-      assert.equal(typeof cache.sync.has, 'function')
+      assert.strictEqual(typeof cache.sync.has, 'function')
     })
     it('write should be the same as async', () => {
-      assert.equal(cache.sync.write, cache.write)
+      assert.strictEqual(cache.sync.write, cache.write)
     })
     it('has should be the same as async', () => {
-      assert.equal(cache.sync.has, cache.has)
+      assert.strictEqual(cache.sync.has, cache.has)
     })
     it('clear should be the same as async', () => {
-      assert.equal(cache.sync.clear, cache.clear)
+      assert.strictEqual(cache.sync.clear, cache.clear)
     })
     it('read should not be the same as async', () => {
       assert.notEqual(cache.sync.read, cache.read)
@@ -132,7 +132,7 @@ describe('Cache', () => {
         called = true
       }
       cache.sync.read('non-existent-key', factory)
-      assert.equal(called, true)
+      assert.strictEqual(called, true)
     })
     it('read should not call factory if key exists', () => {
       let called = 0
@@ -141,11 +141,11 @@ describe('Cache', () => {
         return 'value'
       }
       const value1 = cache.sync.read('non-existent-key', factory)
-      assert.equal(value1, 'value')
-      assert.equal(called, 1)
+      assert.strictEqual(value1, 'value')
+      assert.strictEqual(called, 1)
       const shouldBeValue = cache.sync.read('non-existent-key', factory)
-      assert.equal(shouldBeValue, 'value')
-      assert.equal(called, 1)
+      assert.strictEqual(shouldBeValue, 'value')
+      assert.strictEqual(called, 1)
     })
     it('read should call factory if cache expires', async () => {
       let called = 0
@@ -154,25 +154,25 @@ describe('Cache', () => {
         return `value${called}`
       }
       const value1 = cache.sync.read('my-key', factory, { expiresInterval: 10 })
-      assert.equal(value1, 'value1')
-      assert.equal(called, 1)
+      assert.strictEqual(value1, 'value1')
+      assert.strictEqual(called, 1)
       const value2 = cache.sync.read('my-key')
-      assert.equal(value2, 'value1')
-      assert.equal(called, 1)
+      assert.strictEqual(value2, 'value1')
+      assert.strictEqual(called, 1)
       await _wait(12)
       const value3 = cache.sync.read('my-key', factory)
-      assert.equal(value3, 'value2')
-      assert.equal(called, 2)
+      assert.strictEqual(value3, 'value2')
+      assert.strictEqual(called, 2)
     })
     it('should set never expire if expireInterval is zero', async () => {
       const val = 'never expire'
       const initial = cache.sync.read('non-expiring', () => val, {
         expiresInterval: 0
       })
-      assert.equal(initial, val)
+      assert.strictEqual(initial, val)
       await _wait(10)
       const after = cache.sync.read('non-expiring', () => 'another value')
-      assert.equal(after, val)
+      assert.strictEqual(after, val)
     })
   })
 })
