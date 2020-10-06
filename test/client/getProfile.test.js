@@ -24,7 +24,7 @@ describe('Client.getProfile', () => {
     moxios.uninstall(xhr)
   })
   it('should exist', () => {
-    assert.equal(typeof getProfile, 'function')
+    assert.strictEqual(typeof getProfile, 'function')
   })
   it('should fail if no context', done => {
     getProfile(xhr)
@@ -38,10 +38,13 @@ describe('Client.getProfile', () => {
   it('should call /user/profile', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.url, REQUEST_URL)
-      assert.equal(request.config.headers['x-api-key'], '1234')
-      assert.equal(request.config.headers['x-etvas-context'], 'my context')
-      assert.equal(request.config.method, 'get')
+      assert.strictEqual(request.config.url, REQUEST_URL)
+      assert.strictEqual(request.config.headers['x-api-key'], '1234')
+      assert.strictEqual(
+        request.config.headers['x-etvas-context'],
+        'my context'
+      )
+      assert.strictEqual(request.config.method, 'get')
       request.respondWith({ status: 200 })
       done()
     })
@@ -54,12 +57,12 @@ describe('Client.getProfile', () => {
       request.respondWith({ status: 200, response: { foo: 'bar' } })
     })
     const response = await getProfile(xhr, 'my context')
-    assert.equal(response.contextId, 'my context')
+    assert.strictEqual(response.contextId, 'my context')
   })
   it('should append query string if provided', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.url, `${REQUEST_URL}?include=address`)
+      assert.strictEqual(request.config.url, `${REQUEST_URL}?include=address`)
       request.respondWith({ status: 200 })
       done()
     })

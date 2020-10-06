@@ -24,14 +24,14 @@ describe('Client.validateToken', () => {
     moxios.uninstall(xhr)
   })
   it('should exist', () => {
-    assert.equal(typeof validateToken, 'function')
+    assert.strictEqual(typeof validateToken, 'function')
   })
   it(`should make a post call to ${REQUEST_URL}`, async () => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.url, REQUEST_URL)
-      assert.equal(request.config.headers['x-api-key'], '1234')
-      assert.equal(request.config.method, 'post')
+      assert.strictEqual(request.config.url, REQUEST_URL)
+      assert.strictEqual(request.config.headers['x-api-key'], '1234')
+      assert.strictEqual(request.config.method, 'post')
       request.respondWith({ status: 200 })
     })
     await validateToken(xhr, 'token')
@@ -40,42 +40,42 @@ describe('Client.validateToken', () => {
     try {
       await validateToken(xhr)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if token is undefined', async () => {
     try {
       await validateToken(xhr)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if token is null', async () => {
     try {
       await validateToken(xhr, null)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if token is true', async () => {
     try {
       await validateToken(xhr, true)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if token is false', async () => {
     try {
       await validateToken(xhr, false)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if token is number', async () => {
     try {
       await validateToken(xhr, 1234)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
 })

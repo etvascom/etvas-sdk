@@ -25,20 +25,23 @@ describe('Client.sendEmail', () => {
     moxios.uninstall(xhr)
   })
   it('should exist', () => {
-    assert.equal(typeof sendEmail, 'function')
+    assert.strictEqual(typeof sendEmail, 'function')
   })
   it(`should make a call to ${REQUEST_URL}`, done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.url, REQUEST_URL)
-      assert.equal(request.config.headers['x-api-key'], '1234')
-      assert.equal(request.config.headers['x-etvas-context'], 'context-3456')
-      assert.equal(request.config.method, 'post')
+      assert.strictEqual(request.config.url, REQUEST_URL)
+      assert.strictEqual(request.config.headers['x-api-key'], '1234')
+      assert.strictEqual(
+        request.config.headers['x-etvas-context'],
+        'context-3456'
+      )
+      assert.strictEqual(request.config.method, 'post')
       const body = JSON.parse(request.config.data)
       assert.notEqual(body, null)
-      assert.equal(body.locale, 'en')
-      assert.equal(body.subject, 'subject')
-      assert.equal(body.message, 'message')
+      assert.strictEqual(body.locale, 'en')
+      assert.strictEqual(body.subject, 'subject')
+      assert.strictEqual(body.message, 'message')
       request.respondWith({ status: 200 })
       done()
     })
@@ -51,13 +54,16 @@ describe('Client.sendEmail', () => {
   it('should replace classes with inline styles', done => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.url, REQUEST_URL)
-      assert.equal(request.config.headers['x-api-key'], '1234')
-      assert.equal(request.config.headers['x-etvas-context'], 'context-3456')
-      assert.equal(request.config.method, 'post')
+      assert.strictEqual(request.config.url, REQUEST_URL)
+      assert.strictEqual(request.config.headers['x-api-key'], '1234')
+      assert.strictEqual(
+        request.config.headers['x-etvas-context'],
+        'context-3456'
+      )
+      assert.strictEqual(request.config.method, 'post')
       const body = JSON.parse(request.config.data)
 
-      assert.equal(
+      assert.strictEqual(
         body.message,
         `<h1 style="${cssInline.title}">Hello #user_first_name</h1><a style="${cssInline.button_accent}" href="#product_use_url">View product</a>`
       )

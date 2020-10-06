@@ -24,14 +24,14 @@ describe('Client.readData', () => {
     moxios.uninstall(xhr)
   })
   it('should exist', () => {
-    assert.equal(typeof readData, 'function')
+    assert.strictEqual(typeof readData, 'function')
   })
   it(`should make a call to ${REQUEST_URL}/key`, async () => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.url, `${REQUEST_URL}/a-key`)
-      assert.equal(request.config.headers['x-api-key'], '1234')
-      assert.equal(request.config.method, 'get')
+      assert.strictEqual(request.config.url, `${REQUEST_URL}/a-key`)
+      assert.strictEqual(request.config.headers['x-api-key'], '1234')
+      assert.strictEqual(request.config.method, 'get')
       request.respondWith({ status: 200 })
     })
     await readData(xhr, 'a-key')
@@ -40,63 +40,63 @@ describe('Client.readData', () => {
     try {
       await readData(xhr, { foo: 'bar' })
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if key is undefined', async () => {
     try {
       await readData(xhr)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if key is null', async () => {
     try {
       await readData(xhr, null)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if key is true', async () => {
     try {
       await readData(xhr, true)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if key is false', async () => {
     try {
       await readData(xhr, false)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should fail if key is number', async () => {
     try {
       await readData(xhr, 1234)
     } catch (err) {
-      assert.equal(err instanceof Error, true)
+      assert.strictEqual(err instanceof Error, true)
     }
   })
   it('should return string if string is stored', async () => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.method, 'get')
-      assert.equal(request.config.url, '/external-data/a-key')
+      assert.strictEqual(request.config.method, 'get')
+      assert.strictEqual(request.config.url, '/external-data/a-key')
       request.respondWith({
         status: 200,
         response: { data: 'a non-json string' }
       })
     })
     const response = await readData(xhr, 'a-key')
-    assert.equal(response, 'a non-json string')
+    assert.strictEqual(response, 'a non-json string')
   })
 
   it('should return object if JSON is stored', async () => {
     moxios.wait(() => {
       const request = moxios.requests.mostRecent()
-      assert.equal(request.config.method, 'get')
-      assert.equal(request.config.url, '/external-data/a-key')
+      assert.strictEqual(request.config.method, 'get')
+      assert.strictEqual(request.config.url, '/external-data/a-key')
       request.respondWith({
         status: 200,
         response: { data: JSON.stringify({ foo: 'bar' }) }
