@@ -685,4 +685,30 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('Debug config', () => {
+    it('should pass for undefined', () => {
+      assert.doesNotThrow(() => {
+        validate({ debug: undefined })
+      })
+    })
+    it('should fail for string', () => {
+      assert.throws(() => {
+        validate({ debug: 'hello' })
+      })
+    })
+    it('should fail for a function', () => {
+      assert.throws(() => {
+        validate({
+          debug: () => {
+            return true
+          }
+        })
+      })
+    })
+    it('should fail for null')
+    it('should fail for boolean true')
+    it('should fail for boolean false')
+    it('should fail for array')
+    it('should fail for empty array')
+  })
 })
