@@ -30,7 +30,7 @@ error when trying to call other Etvas functions.
 const etvas = require('@etvas/etvas-sdk')
 
 const config = {
-  apiURL: 'https://api.etvas.com',
+  apiURL: 'https://api.helloetvas.com',
   apiKey: '1234-1234-1234-1234',
   eventSecret: 'my-signature-secret',
 }
@@ -43,7 +43,7 @@ If you have multiple product variants, you can easily put them here:
 const etvas = require('@etvas/etvas-sdk')
 
 const config = {
-  apiURL: 'https://api.etvas.com',
+  apiURL: 'https://api.helloetvas.com',
   apiKey: '1234-1234-1234-1234',
   eventSecret: 'my-signature-secret',
   productVariants: {
@@ -62,13 +62,38 @@ If you want to communicate with Etvas API (and you should :), you need to sign y
 const etvas = require('@etvas/etvas-sdk')
 
 const config = {
-  apiURL: 'https://api.etvas.com',
+  apiURL: 'https://api.helloetvas.com',
   apiKey: '1234-1234-1234-1234',
   eventSecret: 'my-signature-secret',
   reqSignatureSecret: 'super-secret-key'
 }
 etvas.init(config)
 ```
+
+Of course, you might want to test the events with a quick method like curl or Postman. This means you will not be able to supply a signature header easily.
+
+In order to accomplish this, you can pass a `debug` variable in your config like this:
+
+```
+const etvas = require('@etvas/etvas-sdk')
+
+const config = {
+  apiURL: 'https://api.helloetvas.com',
+  apiKey: '1234-1234-1234-1234',
+  eventSecret: 'my-signature-secret',
+  reqSignatureSecret: 'super-secret-key',
+  debug: {
+    suppressIncomingSignatureCheck: true
+  }
+}
+etvas.init(config)
+```
+
+When the system encounters the `suppressSignatureCheck` with a `true` value, it will not be checked, even if exists in the header.
+
+The debug variables can find their way in a production environment. In order to avoid this, a special environment variable is required to be set to true for taking the `debug` section into account. This environment variable is named `ETVAS_SDK_DEBUG=true`. If the environment variable is not present or is set to false, the debug configuration is ignored.
+
+--
 
 See what version you are currently using with:
 
@@ -404,7 +429,7 @@ const bodyParser = require('body-parser')
 const assert = require('assert')
 
 etvas.init({
-  apiURL: 'https://api.etvas.com",
+  apiURL: 'https://api.helloetvas.com",
   apiKey: '12345678',
   eventSecret: 'my-signature-secret'
 })
@@ -437,7 +462,7 @@ const bodyParser = require('body-parser')
 const assert = require('assert')
 
 etvas.init({
-  apiURL: 'https://api.etvas.com",
+  apiURL: 'https://api.helloetvas.com",
   apiKey: '12345678',
   eventSecret: 'my-signature-secret'
   productVariants: {
