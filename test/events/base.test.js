@@ -536,6 +536,27 @@ describe('Events', () => {
       const handler = proxy()
       await handler(req, res)
     })
+    it('should have undefined variant if payload not provided', async () => {
+      etvas.init({ ..._defaultOptions, ..._additionalOptions })
+      const body = {
+        name: TEST_EVENT_NAME,
+        payload: undefined,
+        timestamp: Date.now()
+      }
+      const req = new MockReq(
+        {
+          'x-etvas-signature': _sign(JSON.stringify(body))
+        },
+        body
+      )
+      const res = new MockRes()
+      proxy.on(TEST_EVENT_NAME, async (payload, variant) => {
+        assert.strictEqual(payload, undefined)
+        assert.strictEqual(variant, undefined)
+      })
+      const handler = proxy()
+      await handler(req, res)
+    })
     it('should have undefined variant if not configured', async () => {
       const body = {
         name: TEST_EVENT_NAME,

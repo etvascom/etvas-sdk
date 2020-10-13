@@ -11,7 +11,10 @@ const REQUEST_URL = '/external-data'
 const _defaultOptions = {
   apiURL: 'https://localhost:1234',
   apiKey: '12345678',
-  eventSecret: '12345678'
+  eventSecret: '12345678',
+  debug: {
+    suppressSignatureCheck: true
+  }
 }
 
 const _additionalOptions = {
