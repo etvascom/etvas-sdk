@@ -83,7 +83,7 @@ const config = {
   eventSecret: 'my-signature-secret',
   reqSignatureSecret: 'super-secret-key',
   debug: {
-    suppressIncomingSignatureCheck: true
+    suppressSignatureCheck: true
   }
 }
 etvas.init(config)
