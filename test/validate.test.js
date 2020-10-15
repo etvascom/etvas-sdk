@@ -685,4 +685,102 @@ describe('Internal validation', () => {
       })
     })
   })
+  describe('Debug config', () => {
+    it('should pass for undefined', () => {
+      assert.doesNotThrow(() => {
+        validate({ debug: undefined }, 'TEST')
+      })
+    })
+    it('should pass for object', () => {
+      assert.doesNotThrow(() => {
+        validate({ debug: {} }, 'TEST')
+      })
+    })
+
+    it('should fail for non-empty string', () => {
+      assert.throws(() => {
+        validate({ debug: 'hello' }, 'TEST')
+      })
+    })
+    it('should fail for a function', () => {
+      assert.throws(() => {
+        validate(
+          {
+            debug: () => {
+              return true
+            }
+          },
+          'TEST'
+        )
+      })
+    })
+    it('should fail for boolean true', () => {
+      assert.throws(() => {
+        validate({ debug: true }, 'TEST')
+      })
+    })
+    it('should fail for boolean false', () => {
+      assert.throws(() => {
+        validate({ debug: false }, 'TEST')
+      })
+    })
+    it('should fail for null', () => {
+      assert.throws(() => {
+        validate({ debug: null })
+      })
+    })
+    it('should fail for array', () => {
+      assert.throws(() => {
+        validate({ debug: [] })
+      })
+    })
+    describe('suppressSignatureCheck', () => {
+      it('should pass for undefined', () => {
+        assert.doesNotThrow(() => {
+          validate({ debug: { suppressSignatureCheck: undefined } }, 'TEST')
+        })
+      })
+      it('should fail for object', () => {
+        assert.throws(() => {
+          validate({ debug: { suppressSignatureCheck: {} } }, 'TEST')
+        })
+      })
+
+      it('should fail for non-empty string', () => {
+        assert.throws(() => {
+          validate({ debug: { suppressSignatureCheck: 'hello' } }, 'TEST')
+        })
+      })
+      it('should fail for a function', () => {
+        assert.throws(() => {
+          validate(
+            {
+              debug: { suppressSignatureCheck: () => true }
+            },
+            'TEST'
+          )
+        })
+      })
+      it('should pass for boolean true', () => {
+        assert.doesNotThrow(() => {
+          validate({ debug: { suppressSignatureCheck: true } }, 'TEST')
+        })
+      })
+      it('should pass for boolean false', () => {
+        assert.doesNotThrow(() => {
+          validate({ debug: { suppressSignatureCheck: false } }, 'TEST')
+        })
+      })
+      it('should fail for null', () => {
+        assert.throws(() => {
+          validate({ debug: { suppressSignatureCheck: null } })
+        })
+      })
+      it('should fail for array', () => {
+        assert.throws(() => {
+          validate({ debug: { suppressSignatureCheck: [] } })
+        })
+      })
+    })
+  })
 })
