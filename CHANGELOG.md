@@ -56,3 +56,15 @@
   - Expose hmac.sign and hmac.verify on main etvas object
 - `v1.1.0`
   - Add internal use `_sendRawEmail`
+- `v1.2.0`
+  - Add signed requests
+  - Add tests for signed requests
+  - Improved documentation
+- `v1.2.1`
+  - Fix bugs on signature config absence / presence
+  - Add documentation
+- `v1.2.2`
+  - Internal - forced timestamp
+  - Add tests and documentation
+- `v1.2.3`
+  - updated axios from `0.19.x` to `0.21.1` to fix vulnerability
