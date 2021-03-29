@@ -5,7 +5,7 @@
   "card-text_grey": "font-size: 12px; width: auto; color: #a0aab3; line-height: 24px; font-weight: 900; text-transform: uppercase;",
   "card-text_black": "color: #000001; font-size: 14px; line-height: 24px;",
   "card_text": "color: #333333; font-size: 14px; line-height: 24px;",
-  "button_accent": "text-decoration: none; padding: 10px 100px; text-transform: uppercase; color: #ffffff; font-weight: 900; font-size: 12px; line-height: 21px; border-radius: 8px; background-color: ${accentColor};",
+  "button_accent": "display: inline-block; text-decoration: none; padding: 10px 100px; text-transform: uppercase; color: #ffffff; font-weight: 900; font-size: 12px; line-height: 21px; border-radius: 8px; background-color: ${accentColor};",
   "link": "font-size: 12px; line-height: 24px; text-decoration: underline; color: ${accentColor};",
   "separator": "display: block; float: none; width: 100%; border: none; background-color: #f2f2f2; box-shadow: none; height: 40px;"
 }
