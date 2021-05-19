@@ -113,57 +113,22 @@ describe('Etvas SDK', () => {
     it('should exist as a function', () => {
       assert.strictEqual(typeof etvas.client, 'function')
     })
-    it('should have a read function', () => {
-      assert.strictEqual(typeof etvas.client.read, 'function')
-    })
-    it('should have a write function', () => {
-      assert.strictEqual(typeof etvas.client.write, 'function')
-    })
-    it('should have a clear function', () => {
-      assert.strictEqual(typeof etvas.client.clear, 'function')
-    })
-    it('should have a read function in context', () => {
-      assert.strictEqual(typeof etvas.client('token').read, 'function')
-    })
-    it('should have a write function in context', () => {
-      assert.strictEqual(typeof etvas.client('token').write, 'function')
-    })
-    it('should have a clear function in context', () => {
-      assert.strictEqual(typeof etvas.client('token').clear, 'function')
-    })
-    it('should have a getProductVariant function in context', () => {
-      assert.strictEqual(
-        typeof etvas.client('token').getProductVariant,
-        'function'
-      )
-    })
-    it('should throw on getProductVariants if no configuration given', async () => {
-      moxios.wait(() => {
-        const request = moxios.requests.mostRecent()
-        request.respondWith({
-          status: 200,
-          response: { contextId: '1234', productId: 'key-1234' }
-        })
+    describe('Without a context', () => {
+      it('should have a read function', () => {
+        assert.strictEqual(typeof etvas.client.read, 'function')
       })
-      try {
-        await etvas.client('token').getProductVariant('key-1234')
-      } catch (err) {
-        assert.strictEqual(err instanceof Error, true)
-      }
-    })
-    it('should identify product variant if configuration given', async () => {
-      moxios.stubRequest('/verify-token', {
-        status: 200,
-        response: { contextId: '1234', productId: 'key-1234' }
+      it('should have a write function', () => {
+        assert.strictEqual(typeof etvas.client.write, 'function')
       })
-      etvas.init({
-        ..._defaultOptions,
-        ..._additionalOptions
+      it('should have a clear function', () => {
+        assert.strictEqual(typeof etvas.client.clear, 'function')
       })
-      const result = await etvas.client('token').getProductVariant('key-1234')
-      assert.strictEqual(result, 'first')
-    })
-    describe('no-context', () => {
+      it('should have a getCustomerProfile function', () => {
+        assert.strictEqual(typeof etvas.client.getCustomerProfile, 'function')
+      })
+      it('should have a getPurchaseDetails function', () => {
+        assert.strictEqual(typeof etvas.client.getPurchaseDetails, 'function')
+      })
       it('read should call correct url', done => {
         moxios.wait(() => {
           const request = moxios.requests.mostRecent()
@@ -220,8 +185,191 @@ describe('Etvas SDK', () => {
         })
         etvas.client.clear('clear-key')
       })
+      it('should call correct URL for customer profile', done => {
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.strictEqual(request.config.url, '/user/profile')
+          assert.strictEqual(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.strictEqual(request.config.method, 'get')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client.getCustomerProfile('1234')
+      })
+      it('should call correct URL for purchase details', done => {
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.strictEqual(request.config.url, '/purchase')
+          assert.strictEqual(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.strictEqual(request.config.method, 'get')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client.getPurchaseDetails('1234')
+      })
+      it('should call correct URL sending email', done => {
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.strictEqual(request.config.url, '/user/notify')
+          assert.strictEqual(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.strictEqual(request.config.method, 'post')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client.sendEmailNotification('1234', {
+          locale: 'de',
+          subject: 'Testing German',
+          message: 'This is a test'
+        })
+      })
     })
-    describe('with-context', () => {
+    describe('With a context', () => {
+      it('should have a read function in context', () => {
+        assert.strictEqual(typeof etvas.client('token').read, 'function')
+      })
+      it('should have a write function in context', () => {
+        assert.strictEqual(typeof etvas.client('token').write, 'function')
+      })
+      it('should have a clear function in context', () => {
+        assert.strictEqual(typeof etvas.client('token').clear, 'function')
+      })
+      it('should have a getCustomerProfile function in context', () => {
+        assert.strictEqual(
+          typeof etvas.client('token').getCustomerProfile,
+          'function'
+        )
+      })
+      it('should have a getPurchaseDetails function in context', () => {
+        assert.strictEqual(
+          typeof etvas.client('token').getPurchaseDetails,
+          'function'
+        )
+      })
+      it('should have a getProductVariant function in context', () => {
+        assert.strictEqual(
+          typeof etvas.client('token').getProductVariant,
+          'function'
+        )
+      })
+      it('should call correct URL for customer profile', done => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: {
+            contextId: '1234'
+          }
+        })
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.strictEqual(request.config.url, '/user/profile')
+          assert.strictEqual(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.strictEqual(request.config.method, 'get')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client('token').getCustomerProfile()
+      })
+      it('should call the getProfile internal function', async () => {
+        const expected = { firstName: 'Test', email: 'test@example.com' }
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: {
+            contextId: '1234'
+          }
+        })
+        moxios.stubRequest('/user/profile', {
+          status: 200,
+          response: {
+            ...expected
+          }
+        })
+        const profile = await etvas.client('token').getCustomerProfile()
+        assert.deepStrictEqual(profile, { contextId: '1234', ...expected })
+      })
+      it('should call correct URL for purchase details', done => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: {
+            contextId: '1234'
+          }
+        })
+
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.strictEqual(request.config.url, '/purchase')
+          assert.strictEqual(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.strictEqual(request.config.method, 'get')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client('token').getPurchaseDetails()
+      })
+      it('should call correct URL sending email', done => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: {
+            contextId: '1234'
+          }
+        })
+        moxios.wait(() => {
+          const request = moxios.requests.mostRecent()
+          assert.strictEqual(request.config.url, '/user/notify')
+          assert.strictEqual(
+            request.config.headers['x-api-key'],
+            _defaultOptions.apiKey
+          )
+          assert.strictEqual(request.config.method, 'post')
+          request.respondWith({ status: 200 })
+          done()
+        })
+        etvas.client('1234').sendEmailNotification({
+          locale: 'en',
+          subject: 'Text',
+          message: 'This is a test'
+        })
+      })
+    })
+    it('should throw on getProductVariants if no configuration given', async () => {
+      moxios.wait(() => {
+        const request = moxios.requests.mostRecent()
+        request.respondWith({
+          status: 200,
+          response: { contextId: '1234', productId: 'key-1234' }
+        })
+      })
+      try {
+        await etvas.client('token').getProductVariant('key-1234')
+      } catch (err) {
+        assert.strictEqual(err instanceof Error, true)
+      }
+    })
+    it('should identify product variant if configuration given', async () => {
+      moxios.stubRequest('/verify-token', {
+        status: 200,
+        response: { contextId: '1234', productId: 'key-1234' }
+      })
+      etvas.init({
+        ..._defaultOptions,
+        ..._additionalOptions
+      })
+      const result = await etvas.client('token').getProductVariant('key-1234')
+      assert.strictEqual(result, 'first')
+    })
+    describe('With context, no cache', () => {
       beforeEach(() => {
         cache.clear({ all: true })
       })
@@ -351,6 +499,40 @@ describe('Etvas SDK', () => {
         await etvas.client('token1').getCustomerProfile()
         await etvas.client('token2').getCustomerProfile()
         await etvas.client('token3').getCustomerProfile()
+
+        const verifyTokenRequests = moxios.requests.__items
+          .filter(request => request.config.url === '/verify-token')
+          .map(request => JSON.parse(request.config.data))
+
+        assert.deepStrictEqual(verifyTokenRequests, [
+          { token: 'token1' },
+          { token: 'token2' },
+          { token: 'token3' }
+        ])
+      })
+      it('purchaseDetails should fail if no context', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { noContext: true }
+        })
+        try {
+          await etvas.client('token').getPurchaseDetails()
+        } catch (err) {
+          assert.strictEqual(err instanceof Error, true)
+        }
+      })
+      it('purchaseDetails should not use cached value if different token', async () => {
+        moxios.stubRequest('/verify-token', {
+          status: 200,
+          response: { contextId: 'context-1234' }
+        })
+        moxios.stubRequest('/purchase', {
+          status: 200,
+          response: { data: { foo: 'bar' } }
+        })
+        await etvas.client('token1').getPurchaseDetails()
+        await etvas.client('token2').getPurchaseDetails()
+        await etvas.client('token3').getPurchaseDetails()
 
         const verifyTokenRequests = moxios.requests.__items
           .filter(request => request.config.url === '/verify-token')

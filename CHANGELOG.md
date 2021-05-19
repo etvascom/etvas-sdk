@@ -68,3 +68,8 @@
   - Add tests and documentation
 - `v1.2.3`
   - updated axios from `0.19.x` to `0.21.1` to fix vulnerability
+- `v1.2.4`
+  - Fix CSS button on multiple lines
+- `v1.3.0`
+  - Add `getPurchaseDetails` function
+  - Improved tests
