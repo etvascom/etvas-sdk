@@ -256,3 +256,59 @@ describe('Signed requests', () => {
     xhr.post('/greet', data)
   })
 })
+
+describe('Empty body on post', () => {
+  let xhr
+  beforeEach(() => {
+    xhr = xhrFactory({
+      apiKey: 'api-key-1234',
+      reqSignatureSecret: '1234',
+      forcedTimestamp: 1624018703
+    })
+    moxios.install(xhr)
+  })
+  afterEach(() => {
+    moxios.uninstall(xhr)
+  })
+  it('should correctly compute signature for an empty post request', done => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      const payload = `POST
+/users/user@example.com/authorize
+content-type:application/json
+x-api-key:api-key-1234
+x-timestamp:1624018703
+44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a`
+      const expected = crypto
+        .createHmac('sha256', '1234')
+        .update(payload)
+        .digest('hex')
+      const actual = request.config.headers['x-signature']
+      assert.strictEqual(actual, expected)
+      request.respondWith({ status: 200 })
+      done()
+    })
+    xhr.post('/users/user@example.com/authorize', {})
+  })
+
+  it('should correctly compute signature for an undefined body post request', done => {
+    moxios.wait(() => {
+      const request = moxios.requests.mostRecent()
+      const payload = `POST
+/users/user@example.com/authorize
+content-type:application/json
+x-api-key:api-key-1234
+x-timestamp:1624018703
+44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a`
+      const expected = crypto
+        .createHmac('sha256', '1234')
+        .update(payload)
+        .digest('hex')
+      const actual = request.config.headers['x-signature']
+      assert.strictEqual(actual, expected)
+      request.respondWith({ status: 200 })
+      done()
+    })
+    xhr.post('/users/user@example.com/authorize')
+  })
+})

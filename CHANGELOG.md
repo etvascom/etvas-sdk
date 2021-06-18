@@ -73,3 +73,5 @@
 - `v1.3.0`
   - Add `getPurchaseDetails` function
   - Improved tests
+- `v1.3.1`
+  - Fix wrong canonical on empty body post

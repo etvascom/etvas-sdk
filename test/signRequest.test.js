@@ -159,5 +159,30 @@ describe('SignRequest', () => {
       assert.strictEqual(signature.timestamp, forcedTimestamp)
       assert.strictEqual(signature.canonical, '{"foo":"bar"}')
     })
+
+    it('should compute POST signature with empty body', () => {
+      const forcedTimestamp = 1624018703
+      const signature = prepareSignature(
+        {
+          method: 'POST',
+          url: '/users/bogdan.onu+something@thinslices.com/authorize',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          data: {}
+        },
+        {
+          apiKey: '0RVpG9HbdZXkLwmWK6cCYppMKuSsSg1ViA42uQ20',
+          reqSignatureSecret: '1234'
+        },
+        forcedTimestamp
+      )
+      assert.strictEqual(
+        signature.signature,
+        'd82c5a03188bd152f713c8918d4c7ff6f2f736a533de9b2f0c746e1496f34859'
+      )
+      assert.strictEqual(signature.timestamp, forcedTimestamp)
+      assert.strictEqual(signature.canonical, '{}')
+    })
   })
 })
