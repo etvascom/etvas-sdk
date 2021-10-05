@@ -93,13 +93,38 @@ When the system encounters the `suppressSignatureCheck` with a `true` value, it 
 
 The debug variables can find their way in a production environment. In order to avoid this, a special environment variable is required to be set to true for taking the `debug` section into account. This environment variable is named `ETVAS_SDK_DEBUG=true`. If the environment variable is not present or is set to false, the debug configuration is ignored.
 
+Using Postman or curl requires you to send by POST the events to your local api. The Etvas Backend, for example, when sending a Purchase Succeeded event (without the signature check), the payload will look like this:
+
+```
+POST HTTP/1.1 http://localhost:5000/api/events
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "purchase.succedded",
+  "payload": {
+     "productId": "1234-1234-1234-1234",
+     "purchaseId": "1234-1234-1234-1235",
+     "metadata": {
+       "cancelsAt": 1633420771342,
+        "trialEndsAt": 1633420771332,
+        "isDemo": false
+      }
+    }
+  },
+  "timestamp": 1633420771994
+}
+```
+
 --
 
 See what version you are currently using with:
 
 ```
+
 const etvas = require('@etvas/etvas-sdk')
 console.log('I am using the awesome @etvas/etvas-sdk version', etvas.version)
+
 ```
 
 ### Using the client
@@ -116,21 +141,25 @@ First thing you should do is to validate the token,
 thus knowing for sure the token is legit.
 
 ```
+
 const isTokenValid = await etvas.client(token).validate()
 if (!isTokenValid) {
-  console.error('Something is fishy, this token is not legit', token)
-  throw new Error('Invalid token')
+console.error('Something is fishy, this token is not legit', token)
+throw new Error('Invalid token')
 }
+
 ```
 
 Getting the customer profile is also easy:
 
 ```
+
 const profile = await etvas.client(token).getCustomerProfile()
 console.info('Customer first name', profile.firstName)
 console.info('Customer last name', profile.lastName)
 console.info('Customer email address', profile.email)
 console.info('Customer phone number', profile.phoneNumber)
+
 ```
 
 You may want to write some information of your own regarding
@@ -140,8 +169,10 @@ details about subscription or maybe just the purchase date.
 > Note: the maximum length of the data you can write is 100k (after JSON stringify)
 
 ```
+
 const data = { subscription: '1234', purchaseDate: (new Date()).valueOf() }
 await etvas.client(token).write(data)
+
 ```
 
 You can access previously saved data in the same context, even if the
@@ -149,8 +180,10 @@ token is changed. As long as we're talking about the same purchase, you
 will always get the same date you saved.
 
 ```
+
 const data = etvas.client(token).write(data)
 assert.strictEqual(data.subscription, '1234')
+
 ```
 
 > Note: this information is attached to the purchase, not the customer.
@@ -160,20 +193,24 @@ assert.strictEqual(data.subscription, '1234')
 If you need to delete the stored data:
 
 ```
+
 await etvas.client(token).clear()
 // or
 await etvas.client(token).write(null)
+
 ```
 
 You can send a welcoming email, like this:
 
 ```
+
 const data = {
-  locale: 'en',
-  subject: 'Welcome',
-  message: '<h1>Welcome</h1><p>You are most welcome in our application!</p>'
+locale: 'en',
+subject: 'Welcome',
+message: '<h1>Welcome</h1><p>You are most welcome in our application!</p>'
 }
 await etvas.client(token).sendEmailNotification(dat)
+
 ```
 
 The subject must be a plain string (required). The message must be a
@@ -186,12 +223,13 @@ A variant is, for example, a color on your product which dictates how the calls 
 For example:
 
 ```
+
 etvas.init({
-  ...options,
-  productVariants: {
-    'key-1234': 'white',
-    'key-2345': 'green'
-  }
+...options,
+productVariants: {
+'key-1234': 'white',
+'key-2345': 'green'
+}
 })
 
 // when you receive the token:
@@ -199,6 +237,7 @@ const token = '...'
 const variant = await etvas.client(token).getProductVariant()
 
 // the variant will have a value of white or green, depending on the information contained in token
+
 ```
 
 Please note the `async` function here, because it might verify the token with an Axios call (if not already cached). In most cases though, the call will resolve immediately, as the token verification result is already cached.
@@ -214,36 +253,44 @@ key:value type database:
 > (after JSON stringify)
 
 ```
+
 const data = { userId: '1234' }
 await etvas.client.write('my-key', data)
+
 ```
 
 Need to read the data back? No problem (as long as you know the key in which
 you saved the data):
 
 ```
+
 const data = await etvas.client.read('my-key')
 assert.strictEqual(data.userId, '1234')
+
 ```
 
 If you decide to erase the stored information, you can use:
 
 ```
+
 await etvas.client.clear('my-key')
 // or
 await etvas.client.write('my-key', null)
+
 ```
 
 Sending an email message is easy, as long as you know a `contextId`
 (meaning a purchaseId):
 
 ```
+
 const data = {
-  locale: 'en',
-  subject: 'Hello',
-  message: 'We are pleased to inform you everything is ok.',
+locale: 'en',
+subject: 'Hello',
+message: 'We are pleased to inform you everything is ok.',
 }
 await etvas.client.sendEmailNotification(contextId, data)
+
 ```
 
 All fields in data are required and they must be strings. The
@@ -257,18 +304,19 @@ A variant is, for example, a color on your product which dictates how the calls 
 For example:
 
 ```
+
 etvas.init({
-  ...options,
-  productVariants: {
-    'key-1234': 'white',
-    'key-2345': 'green'
-  }
+...options,
+productVariants: {
+'key-1234': 'white',
+'key-2345': 'green'
+}
 })
 
 // when you have the productId (as result, for example, of an event)
 etvas.events.on('product.canceled', async data => {
-  const variant = etvas.client.getProductVariant(data.productId)
-  // the variant will have a value of white or green.
+const variant = etvas.client.getProductVariant(data.productId)
+// the variant will have a value of white or green.
 })
 
 ```
@@ -280,7 +328,9 @@ Please note the `sync` character of `getProductVariant` function, which differs 
 You can use HTML and a set of classes in your message. For example:
 
 ```
+
 const message = `
+
 <h1 class="title">Hello,</h1>
 <p class="text">
   We are pleased to inform you that your date is safely stored
@@ -293,10 +343,11 @@ const message = `
 `
 
 const data = {
-  locale: 'en',
-  subject: 'Hello #user_first_name',
-  message
+locale: 'en',
+subject: 'Hello #user_first_name',
+message
 }
+
 ```
 
 Your message will be inline-styled (for maximum compatibility with the email
@@ -338,37 +389,41 @@ Here are the events emitted by Etvas Servers:
 All the events share the same payload:
 
 ```
+
 HTTP/1.1 POST /etvas/events
 Content-Type: application/json
 {
-  "name": "event.name",
-  "payload": {
-    "productId": "1234-uuid",
-    "purchaseId": "2345-uuid"
-  },
-  timestamp: 123123123
+"name": "event.name",
+"payload": {
+"productId": "1234-uuid",
+"purchaseId": "2345-uuid"
+},
+timestamp: 123123123
 }
+
 ```
 
 In addition, the `user.deleted` event will receive the deleted customer profile (one last time). By the time you receive the event, the customer profile is already deleted (or anonymized) so a call to `getProfile` or `/user/profile` will not yield the desired results anymore. Here is an example:
 
 ```
+
 HTTP/1.1 POST /etvas/events
 Content-Type: application/json
 {
-  "name": "user.deleted",
-  "payload": {
-    "productId": "1234-uuid",
-    "purchaseId": "2345-uuid"
-  },
-  "profile": {
-    "firstName": "Customer first name",
-    "lastName": "Customer last name",
-    "email": "Customer email address",
-    "phoneNumber": "Customer phone number"
-  },
-  timestamp: 123123123
+"name": "user.deleted",
+"payload": {
+"productId": "1234-uuid",
+"purchaseId": "2345-uuid"
+},
+"profile": {
+"firstName": "Customer first name",
+"lastName": "Customer last name",
+"email": "Customer email address",
+"phoneNumber": "Customer phone number"
+},
+timestamp: 123123123
 }
+
 ```
 
 All events received by `POST` in your application are HMAC signed. The signature is present in the `x-etvas-signature` header of the request.
@@ -380,33 +435,39 @@ You should **always** verify the signature against the request body.
 As you know, a typical request body is a JSON:
 
 ```
+
 {
-  "name": "event.name",
-  "payload": {
-    "productId": "1234",
-    "purchaseId: "2345"
-  },
-  timestamp: 123123123
+"name": "event.name",
+"payload": {
+"productId": "1234",
+"purchaseId: "2345"
+},
+timestamp: 123123123
 }
+
 ```
 
 For verifying a signature, you can use the following code:
 
 ```
+
 const canonical = JSON.stringify(req.body)
 const expected = req.get('x-etvas-signature')
 assert.strictEqual(etvas.hmac.verify(canonical, expected))
+
 ```
 
 In addition, you should also verify the `timestamp` value to be valid: the difference between the transmitted timestamp and local one should not be more than 60 seconds:
 
 ```
+
 const { timestamp } = req.body
 const now = Date.now()
 const oneMinute = 60000
 if (isNaN(timestamp) || typeof timestamp !== 'number' || timestamp <= 0 || Math.abs(now - timestamp) < oneMinute) {
-  throw new Error('Something is wrong with the timeline!')
+throw new Error('Something is wrong with the timeline!')
 }
+
 ```
 
 > Note: Using etvas SDK for events will verify the signature automatically for you, and will report a 401 error of the signature does not verify. Also, if error occurs, your registered handler will not be called, so you don't have to worry about managing this kind of errors.
@@ -414,42 +475,46 @@ if (isNaN(timestamp) || typeof timestamp !== 'number' || timestamp <= 0 || Math.
 #### If you are using `express`, we got your back:
 
 ```
+
 const express = require('express')
 const bodyParser = require('body-parser')
 
 const router = express.Router()
 router.use(etvas.events())
+
 ```
 
 This will automatically return a `HTTP/1.1 501 Not Implemented` response to all events, wether you wish or not to handle them. If you do, here is how you should do it:
 
 ```
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const assert = require('assert')
 
 etvas.init({
-  apiURL: 'https://api.helloetvas.com",
-  apiKey: '12345678',
-  eventSecret: 'my-signature-secret'
+apiURL: 'https://api.helloetvas.com",
+apiKey: '12345678',
+eventSecret: 'my-signature-secret'
 })
 
 const router = express.Router()
 router.use('/event', etvas.events())
 
 etvas.events.on('product.purchase', async data => {
-  // the signature and timestamps are already verified.
-  // manage data
-  assert.strictEqual(typeof data.purchaseId, 'string')
-  assert.strictEqual(typeof data.productId, 'string)
+// the signature and timestamps are already verified.
+// manage data
+assert.strictEqual(typeof data.purchaseId, 'string')
+assert.strictEqual(typeof data.productId, 'string)
 
-  // return truthy value for a 200 OK response.
-  // return falsy or throw an error to block the purchase flow.
-  return true
+// return truthy value for a 200 OK response.
+// return falsy or throw an error to block the purchase flow.
+return true
 })
 
 const app = express()
 app.use('/api', router)
+
 ```
 
 #### A word on product variants
@@ -457,31 +522,33 @@ app.use('/api', router)
 If you configured product variants, you will automatically receive the variant name as second parameter in your handler:
 
 ```
+
 const express = require('express')
 const bodyParser = require('body-parser')
 const assert = require('assert')
 
 etvas.init({
-  apiURL: 'https://api.helloetvas.com",
-  apiKey: '12345678',
-  eventSecret: 'my-signature-secret'
-  productVariants: {
-    'key-1234': 'CHEAP_ONE',
-    'key-2345': 'AFFORDABLE_ONE'
-  }
+apiURL: 'https://api.helloetvas.com",
+apiKey: '12345678',
+eventSecret: 'my-signature-secret'
+productVariants: {
+'key-1234': 'CHEAP_ONE',
+'key-2345': 'AFFORDABLE_ONE'
+}
 })
 
 const router = express.Router()
 router.use('/event', etvas.events())
 
 etvas.events.on('product.purchase', async (data, variant) => {
-  // assuming the user purchased the product with id "key-2345"
-  assert.strictEqual(data.purchaseId, 'AFFORDABLE_ONE')
-  return true
+// assuming the user purchased the product with id "key-2345"
+assert.strictEqual(data.purchaseId, 'AFFORDABLE_ONE')
+return true
 })
 
 const app = express()
 app.use('/api', router)
+
 ```
 
 #### If you are not using `express`
@@ -490,26 +557,27 @@ You need to have a slightly different approach. The example below
 uses `http` NodeJS implementation.
 
 ```
+
 const http = require('http')
 const assert = require('assert')
 
 const server = http.createServer((req, res) => {
-  res.setHeader('Content-Type', 'application/json')
+res.setHeader('Content-Type', 'application/json')
 
-  if (req.method !== 'POST' || req.url !== '/events') {
-    res.statusCode = 405
-    res.end('{"error":"METHOD_NOT_ALLOWED"}')
-    return
-  }
+if (req.method !== 'POST' || req.url !== '/events') {
+res.statusCode = 405
+res.end('{"error":"METHOD_NOT_ALLOWED"}')
+return
+}
 
-  let body = ''
+let body = ''
 
-  req.on('data', (data) => {
-    body += data
-  });
+req.on('data', (data) => {
+body += data
+});
 
-  req.on('end', () => {
-    let parsed
+req.on('end', () => {
+let parsed
 
     try {
       parsed = JSON.parse(body);
@@ -530,12 +598,14 @@ const server = http.createServer((req, res) => {
         res.statusCode = 501
         res.end()
     }
-  })
+
+})
 })
 
 server.listen(3000, () => {
-  console.log('Server running at http://localhost:3000/');
+console.log('Server running at http://localhost:3000/');
 });
+
 ```
 
 #### Event aliases
@@ -545,31 +615,34 @@ If you have one handler for multiple events, you can use aliases or array of eve
 Use an array for registering multiple events on one handler:
 
 ```
+
 //
 
 etvas.events.on(['product.suspended', 'product.canceled'], async data => {
-  // manage data
-  assert.strictEqual(typeof data.purchaseId, 'string')
-  assert.strictEqual(typeof data.productId, 'string)
+// manage data
+assert.strictEqual(typeof data.purchaseId, 'string')
+assert.strictEqual(typeof data.productId, 'string)
 
-  // return truthy value for a 200 OK response.
-  // return falsy or throw an error to block the purchase flow.
-  return true
+// return truthy value for a 200 OK response.
+// return falsy or throw an error to block the purchase flow.
+return true
 })
+
 ```
 
 Or you can use alias function:
 
 ```
+
 // First, register an event
 etvas.events.on('product.suspended'], async data => {
-  // manage data
-  assert.strictEqual(typeof data.purchaseId, 'string')
-  assert.strictEqual(typeof data.productId, 'string)
+// manage data
+assert.strictEqual(typeof data.purchaseId, 'string')
+assert.strictEqual(typeof data.productId, 'string)
 
-  // return truthy value for a 200 OK response.
-  // return falsy or throw an error to block the purchase flow.
-  return true
+// return truthy value for a 200 OK response.
+// return falsy or throw an error to block the purchase flow.
+return true
 })
 
 // And add aliases to it:
@@ -577,6 +650,7 @@ etvas.events.alias('product.suspended', 'product.canceled')
 
 // or even with an array:
 etvas.events.alias('product.suspended', ['product.canceled', 'user.deleted'])
+
 ```
 
 > **WARNING**: When you unregister an event name, the other aliases you might already setup are not automatically unregistered. But, when using `off`, you can also use an array, not just an event name.
@@ -586,17 +660,21 @@ etvas.events.alias('product.suspended', ['product.canceled', 'user.deleted'])
 This is pretty much a one-liner, and - you, guessed - must use the `off` function:
 
 ```
+
 etvas.events.off('product.canceled')
+
 ```
 
 Of course, you can use arrays, as well:
 
 ```
+
 etvas.events.off([
-  'product.canceled',
-  'product.suspended',
-  'product.purchased'
+'product.canceled',
+'product.suspended',
+'product.purchased'
 ])
+
 ```
 
 ## Running tests and coverage
@@ -635,6 +713,10 @@ Check back on this page to read the ChangeLog
 - [Homepage](README.md)
 - [Changelog](CHANGELOG.md)
 - [Issues](https://github.com/etvascom/etvas-sdk/issues)
+
+```
+
+```
 
 ```
 
