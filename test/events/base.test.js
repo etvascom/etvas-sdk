@@ -52,6 +52,7 @@ class MockRes {
 function MockReq(headers, body) {
   this.headers = headers
   this.body = body
+  this.rawBody = JSON.stringify(body)
 
   this.get = header => this.headers[header]
 }
