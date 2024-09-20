@@ -430,7 +430,7 @@ All events received by `POST` in your application are HMAC signed. The signature
 
 #### Verify the signature
 
-You should **always** verify the signature against the request body.
+You should **always** verify the signature against the request `rawBody`.
 
 As you know, a typical request body is a JSON:
 
@@ -451,7 +451,7 @@ For verifying a signature, you can use the following code:
 
 ```
 
-const canonical = JSON.stringify(req.body)
+const canonical = req.rawBody
 const expected = req.get('x-etvas-signature')
 assert.strictEqual(etvas.hmac.verify(canonical, expected))
 
@@ -479,6 +479,14 @@ throw new Error('Something is wrong with the timeline!')
 const express = require('express')
 const bodyParser = require('body-parser')
 
+const rawBodySaver = function (req, _, buf, encoding) {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8')
+  }
+}
+
+const app = express()
+app.use(bodyParser.json({ verify: rawBodySaver, limit: '1mb' }))
 const router = express.Router()
 router.use(etvas.events())
 
@@ -498,6 +506,14 @@ apiKey: '12345678',
 eventSecret: 'my-signature-secret'
 })
 
+const rawBodySaver = function (req, _, buf, encoding) {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8')
+  }
+}
+
+const app = express()
+app.use(bodyParser.json({ verify: rawBodySaver, limit: '1mb' }))
 const router = express.Router()
 router.use('/event', etvas.events())
 
@@ -511,8 +527,6 @@ assert.strictEqual(typeof data.productId, 'string)
 // return falsy or throw an error to block the purchase flow.
 return true
 })
-
-const app = express()
 app.use('/api', router)
 
 ```
@@ -537,6 +551,14 @@ productVariants: {
 }
 })
 
+const rawBodySaver = function (req, _, buf, encoding) {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString(encoding || 'utf8')
+  }
+}
+const app = express()
+app.use(bodyParser.json({ verify: rawBodySaver, limit: '1mb' }))
+
 const router = express.Router()
 router.use('/event', etvas.events())
 
@@ -546,7 +568,6 @@ assert.strictEqual(data.purchaseId, 'AFFORDABLE_ONE')
 return true
 })
 
-const app = express()
 app.use('/api', router)
 
 ```
